@@ -1,0 +1,531 @@
+{% extends "userpanel/base.html" %}
+{% block page_content %}
+{% load static %}
+    <section id="report_section" class="content-header" style="display:none;">
+	<div class="report_sec1">
+        <span class="fontsize20">[[ report_name ]]</span>
+        <div class="row" style="margin-top:20px;">
+            <div class="col-md-6">
+                <label style="font-weight:500; font-size:15px;">Agents</label>
+                <select v-model="agent_id" class="form-control">
+                    <option v-for="agent in agent_list" v-bind:value="agent.id">[[ agent.name ]]</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label style="font-weight:500; font-size:15px;">Period</label>
+                <select v-model="period_id" class="form-control">
+                    <option v-for="period in period_list" v-bind:value="period.id">[[ period.name ]]</option>
+                </select>
+            </div>
+        </div>
+        <div class="row" style="margin-top:10px" v-bind:style="period_id!=5?'display:none;':''">
+            <div class="col-md-2">
+                <label>From</label>
+                <div class="input-group date" data-date-format="yyyy-mm-dd">
+                    <input id="from_date" class="form-control" type="text" readonly />
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label>To</label>
+                <div class="input-group date" data-date-format="yyyy-mm-dd">
+                    <input id="to_date" class="form-control" type="text" readonly />
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <button v-on:click="onSetFromToPeriod" class="btn btn-default" style="margin-top:25px; width:100%;">Set</button>
+            </div>
+        </div>
+        <div>
+            <div class="row" style="margin-top:15px">
+                <div class="col-md-6">
+                    <div id="booked_indicator">
+                        <div class="small-box bg-aqua">
+                            <div  class="inner" style="text-align:center;">
+                                <p style="font-size:32px;">[[ pro_booked ]]%</p>
+                                <p style="font-size:20px;">[[ cnt_booked ]]</p>
+                                <p style="font-size:20px;">Booked</p>
+                            </div>
+                        </div>
+                        <div class="fontsize14" style="margin-top:15px; font-size:14px;">
+                            <div class="row line-step">
+                                <div class="col-md-8">Number of Scheduling Calls</div>
+                                <div class="col-md-4">[[ cnt_scheduling ]]</div>
+                            </div>
+                            <div class="row line-step">
+                                <div class="col-md-8">Number of Booked</div>
+                                <div class="col-md-4">[[ cnt_booked ]]</div>
+                            </div>
+                            <div class="row line-step">
+                                <div class="col-md-8">Number of Transferred Calls</div>
+                                <div class="col-md-4">[[ cnt_transferred ]]</div>
+                            </div>
+                            <div class="row line-step">
+                                <div class="col-md-8">Change From Last Week</div>
+                                <div class="col-md-4">[[ pro_booked_change ]]%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id="afterhour_indicator">
+                        <div class="small-box bg-green">
+                            <div class="inner" style="text-align:center;">
+                                <p style="font-size:32px;">[[ pro_booked_afterhour ]]%</p>
+                                <p style="font-size:20px;">[[ cnt_booked_afterhour ]]</p>
+                                <p style="font-size:20px;">After Hour Bookings</p>
+                            </div>
+                        </div>
+                        <div class="fontsize14" style="margin-top:15px; font-size:15px;">
+                            <div class="row line-step">
+                                <div class="col-md-8">Total Incoming Calls</div>
+                                <div class="col-md-4">[[ cnt_incoming ]]</div>
+                            </div>
+                            <div class="row line-step">
+                                <div class="col-md-8">Number Incoming After Hour</div>
+                                <div class="col-md-4">[[ cnt_incoming_afterhour ]]</div>
+                            </div>
+                            <div class="row line-step">
+                                <div class="col-md-8">Number Scheduling Calls After Hour</div>
+                                <div class="col-md-4">[[ cnt_scheduling_afterhour ]]</div>
+                            </div>
+                            <div class="row line-step">
+                                <div class="col-md-8">Booked After Hour</div>
+                                <div class="col-md-4">[[ cnt_booked_afterhour ]]</div>
+                            </div>
+                            <div class="row line-step">
+                                <div class="col-md-8">Change From Last Week</div>
+                                <div class="col-md-4">[[ pro_incoming_afterhour_change ]]%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="separator"></div>
+            <div class="row" style="margin-top:15px">
+                <div class="col-md-6">
+                    <label class="fontsize24">Inbound Calls</label>
+                    <div id="inbound_bar_chart" style="height:300px"></div>
+                    <div class="fontsize14" style="margin-top:15px; font-size:15px;">
+                        <div class="row line-step">
+                            <div class="col-md-8">Total Inbound Calls</div>
+                            <div class="col-md-4">[[ cnt_incoming ]]</div>
+                        </div>
+                        <div class="row line-step">
+                            <div class="col-md-8">Total Non-Scheduling Calls</div>
+                            <div class="col-md-4">[[ cnt_non_scheduling ]]</div>
+                        </div>
+                        <div class="row line-step">
+                            <div class="col-md-8">No Response Calls</div>
+                            <div class="col-md-4">[[ cnt_no_answer ]]</div>
+                        </div>
+                        <div class="row line-step">
+                            <div class="col-md-8">Change From Last Week</div>
+                            <div class="col-md-4">[[ pro_incoming_change ]]%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="fontsize24">Transferred Calls</label>
+                    <div id="transfer_bar_chart" style="height:300px"></div>
+                    <div class="fontsize14" style="margin-top:15px; font-size:15px;">
+                        <div class="row line-step">
+                            <div class="col-md-8">Number of Transferred Calls</div>
+                            <div class="col-md-4">[[ cnt_operator_order ]]</div>
+                        </div>
+                        <div class="row line-step">
+                            <div class="col-md-8">Number of Status Calls</div>
+                            <div class="col-md-4">[[ pro_status ]]%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="separator"></div>
+            <div class="row" style="margin-top:15px">
+                <div class="col-md-12">
+                    <label class="fontsize24">Bookings Chart</label>
+                    <div id="booking_bar_chart" style="height:300px"></div>
+                </div>
+            </div>
+        </div>
+		</div>
+    </section>
+
+    <script src="https://www.amcharts.com/lib/4/core.js"></script>
+    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+
+    <script type="text/javascript">
+        var report_vue;
+        var agent_list = new Array();
+        var period_list = new Array();
+        var agent_id = 1000000;
+        var period_id = 1000000;
+
+        var chart_inbound;
+        var chart_transfer;
+        var chart_booking;
+
+        // *************** Initialize Data *************** //
+        function initData() {
+            {% for agent in agent_list %}
+                agent_list.push({
+                    "id": {{ agent.id }},
+                    "code": "{{ agent.code }}",
+                    "name": "{{ agent.name }}",
+                    "type": {{ agent.type }}
+                });
+                if (agent_id > {{ agent.id }})
+                    agent_id = {{ agent.id }};
+            {% endfor %}
+
+            {% for period in period_list %}
+                period_list.push({
+                    "id": {{ period.id }},
+                    "name": "{{ period.name }}"
+                });
+            {% endfor %}
+
+            if (3 in period_list)
+                period_id = 3;
+            else
+                period_id = period_list[0]["id"]
+        }
+
+        // *************** Initialize Objects *************** //
+        function initObjects() {
+            $(".date").datepicker({
+                autoclose: true,
+                todayHighlight: true
+            }).datepicker('update', new Date());
+        }
+
+        // *************** On Document Ready *************** //
+        $(document).ready(function () {
+            initData();
+
+            // --------------- report vue instance --------------- //
+            report_vue = new Vue({
+                delimiters: ['[[', ']]'],
+                el : "#report_section",
+                data: {
+                    report_name: "{{ report_name }}",
+                    agent_list: agent_list,
+                    period_list: period_list,
+                    agent_id: agent_id,
+                    period_id: period_id,
+
+                    cnt_scheduling: 0,
+                    cnt_booked: 0,
+                    cnt_transferred: 0,
+                    cnt_l_week_booked: 0,
+                    cnt_c_week_booked: 0,
+                    pro_booked: 0,
+                    pro_booked_change: 0,
+                    pro_incoming_afterhour_change: 0,
+
+                    cnt_incoming_afterhour: 0,
+                    cnt_scheduling_afterhour: 0,
+                    cnt_booked_afterhour: 0,
+                    cnt_l_week_incoming_afterhour: 0,
+                    cnt_c_week_incoming_afterhour: 0,
+                    pro_incoming_afterhour: 0,
+                    pro_booked_afterhour: 0,
+
+                    cnt_incoming: 0,
+                    cnt_non_scheduling: 0,
+                    cnt_no_answer: 0,
+                    cnt_l_week_incoming: 0,
+                    cnt_c_week_incoming: 0,
+                    pro_non_scheduling: 0,
+                    pro_no_answer: 0,
+                    pro_incoming_change: 0,
+
+                    cnt_operator_order: 0,
+                    cnt_order: 0,
+                    pro_status: 0,
+                },
+                methods: {
+                    // *************** get report data *************** //
+                    getReportData: function() {
+                        if (this.agent_id == 1000000) {
+                            showMessage(alert_list["0x1000D"]["mode"],
+                                        alert_list["0x1000D"]["title"],
+                                        alert_list["0x1000D"]["msg"], 5000);
+                            return;
+                        }
+
+                        showLoading();
+                        $.ajax({
+                            type: "POST",
+                            url: "/user/get_report1_data",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "agent_id": this.agent_id,
+                                "period_id": this.period_id,
+                                "from_date": $("#from_date").val(),
+                                "to_date": $("#to_date").val()
+                            },
+                            success: function(res) {
+                                res = JSON.parse(res);
+
+                                // ---------- book indicator ---------- //
+                                report_vue.cnt_scheduling = res["cnt_scheduling"];
+                                report_vue.cnt_booked = res["cnt_booked"];
+                                report_vue.cnt_transferred = res["cnt_transferred"];
+                                report_vue.cnt_l_week_booked = res["cnt_l_week_booked"];
+                                report_vue.cnt_c_week_booked = res["cnt_c_week_booked"];
+
+                                if (report_vue.cnt_scheduling != 0)
+                                    report_vue.pro_booked = Math.ceil(report_vue.cnt_booked / report_vue.cnt_scheduling * 100);
+                                else
+                                    report_vue.pro_booked = "N/A";
+
+                                if (report_vue.cnt_l_week_booked != 0) {
+                                    report_vue.pro_booked_change = (report_vue.cnt_c_week_booked - report_vue.cnt_l_week_booked) / report_vue.cnt_l_week_booked * 100;
+                                    report_vue.pro_booked_change = Math.ceil(report_vue.pro_booked_change);
+                                    if (report_vue.pro_booked_change >= 0)
+                                        report_vue.pro_booked_change = "+" + report_vue.pro_booked_change;
+                                } else {
+                                    report_vue.pro_booked_change = "N/A";
+                                }
+
+                                // ---------- afterhour indicator ---------- //
+                                report_vue.cnt_incoming = res["cnt_incoming"];
+                                report_vue.cnt_incoming_afterhour = res["cnt_incoming_afterhour"];
+                                report_vue.cnt_scheduling_afterhour = res["cnt_scheduling_afterhour"];
+                                report_vue.cnt_booked_afterhour = res["cnt_booked_afterhour"];
+                                report_vue.cnt_l_week_incoming_afterhour = res["cnt_l_week_incoming_afterhour"];
+                                report_vue.cnt_c_week_incoming_afterhour = res["cnt_c_week_incoming_afterhour"];
+
+                                if (report_vue.cnt_incoming != 0) {
+                                    report_vue.pro_incoming_afterhour = report_vue.cnt_incoming_afterhour / report_vue.cnt_incoming * 100;
+                                    report_vue.pro_incoming_afterhour = Math.ceil(report_vue.pro_incoming_afterhour);
+                                } else {
+                                    report_vue.pro_incoming_afterhour = "N/A";
+                                }
+                                if (report_vue.cnt_scheduling_afterhour != 0) {
+                                    report_vue.pro_booked_afterhour = report_vue.cnt_booked_afterhour / report_vue.cnt_scheduling_afterhour * 100;
+                                    report_vue.pro_booked_afterhour = Math.ceil(report_vue.pro_booked_afterhour);
+                                } else {
+                                    report_vue.pro_booked_afterhour = "N/A";
+                                }
+
+                                if (report_vue.cnt_l_week_incoming_afterhour != 0) {
+                                    report_vue.pro_incoming_afterhour_change = (report_vue.cnt_c_week_incoming_afterhour - report_vue.cnt_l_week_incoming_afterhour) / report_vue.cnt_l_week_incoming_afterhour * 100;
+                                    report_vue.pro_incoming_afterhour_change = Math.ceil(report_vue.pro_incoming_change);
+                                    if (report_vue.pro_incoming_afterhour_change >= 0)
+                                        report_vue.pro_incoming_afterhour_change = "+" + report_vue.pro_incoming_afterhour_change;
+                                } else {
+                                    report_vue.pro_incoming_afterhour_change = "N/A";
+                                }
+
+
+                                // ---------- inbound indicator ---------- //
+                                report_vue.cnt_non_scheduling = res["cnt_non_scheduling"];
+                                report_vue.cnt_no_answer = report_vue.cnt_incoming - report_vue.cnt_scheduling - report_vue.cnt_non_scheduling;
+                                report_vue.cnt_l_week_incoming = res["cnt_l_week_incoming"];
+                                report_vue.cnt_c_week_incoming = res["cnt_c_week_incoming"];
+
+                                if (report_vue.cnt_incoming != 0) {
+                                    report_vue.pro_no_answer = Math.ceil(report_vue.cnt_no_answer / report_vue.cnt_incoming * 100);
+                                    report_vue.pro_non_scheduling = Math.ceil(report_vue.cnt_non_scheduling / report_vue.cnt_incoming * 100);
+                                }
+
+                                else {
+                                    report_vue.pro_no_answer = "N/A";
+                                    report_vue.pro_non_scheduling = "N/A";
+                                }
+
+                                if (report_vue.cnt_l_week_incoming != 0) {
+                                    report_vue.pro_incoming_change = (report_vue.cnt_c_week_incoming - report_vue.cnt_l_week_incoming) / report_vue.cnt_l_week_incoming * 100;
+                                    report_vue.pro_incoming_change = Math.ceil(report_vue.pro_incoming_change);
+                                    if (report_vue.pro_incoming_change >= 0)
+                                        report_vue.pro_incoming_change = "+" + report_vue.pro_incoming_change;
+                                } else {
+                                    report_vue.pro_incoming_change = "N/A";
+                                }
+
+                                chart_inbound.data = [{
+                                    "x-axis": "Total",
+                                    "value": report_vue.cnt_incoming,
+                                    "lineColor": "#8068dc",
+                                }, {
+                                    "x-axis": "Scheduling",
+                                    "value": report_vue.cnt_scheduling,
+                                    "lineColor": "#c768dc"
+                                }];
+
+                                // ---------- transfer indicator ---------- //
+                                report_vue.cnt_operator_order = res["cnt_operator_order"];
+                                report_vue.cnt_order = res["cnt_order"];
+                                if (report_vue.cnt_operator_order != 0) {
+                                    report_vue.pro_status = report_vue.cnt_order / report_vue.cnt_operator_order * 100;
+                                    report_vue.pro_status = Math.ceil(report_vue.pro_status);
+                                } else {
+                                    report_vue.pro_status = "N/A";
+                                }
+
+                                chart_transfer.data = [{
+                                    "x-axis": "All",
+                                    "value": report_vue.cnt_operator_order,
+                                    "lineColor": "#a367dc"
+                                }, {
+                                    "x-axis": "Status",
+                                    "value": report_vue.cnt_order,
+                                    "lineColor": "#67b7dc"
+                                }];
+
+                                // ---------- chart booking ---------- //
+                                chart_booking.data = res["data_b_chart"];
+
+                                hideLoading();
+                            },
+
+                            error: function(res) {
+                                hideLoading();
+                                // showMessage(alert_list["0xF0001"]["mode"],
+                                //             alert_list["0xF0001"]["title"],
+                                //             alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+
+                    // *************** onClick Set From/To Period *************** //
+                    onSetFromToPeriod: function() {
+                        var from_date = new Date($("#from_date").val());
+                        var to_date = new Date($("#to_date").val());
+                        var delta_days = (to_date - from_date)/86400000;
+                        if (delta_days < 0 || delta_days >= 7) {
+                            alert("Max range is 7 days.");
+                            return;
+                        }
+                        this.getReportData();
+                    }
+                },
+                watch: {
+                    // *************** OnUpdate Agent *************** //
+                    agent_id: function(cur_value, prev_value) {
+                        if (this.period_id == 5)
+                            return;
+                        this.getReportData();
+                    },
+
+                    // *************** OnUpdate Period *************** //
+                    period_id: function(cur_value, prev_value) {
+                        if (cur_value != 5 ) {
+                            this.getReportData();
+                        }
+                    }
+                }
+            });
+
+            // *************** amchart ready *************** //
+            am4core.ready(function () {
+                var inbound_data = [{
+                    "x-axis": "Total",
+                    "value": report_vue.cnt_incoming,
+                    "lineColor": "#8068dc",
+                }, {
+                    "x-axis": "Scheduling",
+                    "value": report_vue.cnt_scheduling,
+                    "lineColor": "#c768dc"
+                }];
+
+                am4core.useTheme(am4themes_animated);
+
+                // --------------- inbound bar chart --------------- //
+                chart_inbound = am4core.create("inbound_bar_chart", am4charts.XYChart);
+                chart_inbound.data = inbound_data;
+
+                var categoryAxis_inbound = chart_inbound.xAxes.push(new am4charts.CategoryAxis());
+                categoryAxis_inbound.dataFields.category = "x-axis";
+                categoryAxis_inbound.renderer.grid.template.location = 0;
+                categoryAxis_inbound.renderer.minGridDistance = 30;
+
+                categoryAxis_inbound.renderer.labels.template.adapter.add("dy", function (dy, target) {
+                    return dy;
+                });
+
+                var valueAxis_inbound = chart_inbound.yAxes.push(new am4charts.ValueAxis());
+
+                var series_inbound = chart_inbound.series.push(new am4charts.ColumnSeries());
+                series_inbound.dataFields.valueY = "value";
+                series_inbound.dataFields.categoryX = "x-axis";
+                series_inbound.name = "Calls";
+                series_inbound.columns.template.tooltipText = "{categoryX}: [bold]{valueY}[/]";
+                series_inbound.columns.template.fillOpacity = .8;
+                series_inbound.columns.template.propertyFields.stroke = "lineColor";
+                series_inbound.columns.template.propertyFields.fill = "lineColor";
+
+
+                // --------------- transfer bar chart --------------- //
+                chart_transfer = am4core.create("transfer_bar_chart", am4charts.XYChart);
+
+                chart_transfer.data = [{
+                    "x-axis": "All",
+                    "value": report_vue.cnt_operator_order,
+                    "lineColor": "#a367dc"
+                }, {
+                    "x-axis": "Status",
+                    "value": report_vue.cnt_order,
+                    "lineColor": "#67b7dc"
+                }];
+
+                var categoryAxis_transfer = chart_transfer.yAxes.push(new am4charts.CategoryAxis());
+                categoryAxis_transfer.dataFields.category = "x-axis";
+                categoryAxis_transfer.numberFormatter.numberFormat = "#";
+                categoryAxis_transfer.renderer.inversed = true;
+
+                var valueAxis_transfer = chart_transfer.xAxes.push(new am4charts.ValueAxis());
+
+                var series_transfer = chart_transfer.series.push(new am4charts.ColumnSeries());
+                series_transfer.dataFields.valueX = "value";
+                series_transfer.dataFields.categoryY = "x-axis";
+                series_transfer.name = "Transfer Indicator";
+                series_transfer.columns.template.propertyFields.fill = "lineColor";
+                series_transfer.columns.template.tooltipText = "{categoryY}: [bold]{valueX}";
+                series_transfer.columns.template.column.stroke = am4core.color("#fff");
+                series_transfer.columns.template.column.strokeOpacity = 0.2;
+                series_transfer.columns.template.fillOpacity = .8;
+
+
+                // --------------- booking bar chart --------------- //
+                chart_booking = am4core.create("booking_bar_chart", am4charts.XYChart);
+                chart_booking.data = [];
+
+                var categoryAxis_booking = chart_booking.xAxes.push(new am4charts.CategoryAxis());
+                categoryAxis_booking.dataFields.category = "x-axis";
+                categoryAxis_booking.renderer.grid.template.location = 0;
+                categoryAxis_booking.renderer.minGridDistance = 30;
+
+                categoryAxis_booking.renderer.labels.template.adapter.add("dy", function (dy, target) {
+                    return dy;
+                });
+
+                var valueAxis_booking = chart_booking.yAxes.push(new am4charts.ValueAxis());
+
+                var series_booking = chart_booking.series.push(new am4charts.ColumnSeries());
+                series_booking.dataFields.valueY = "value";
+                series_booking.dataFields.categoryX = "x-axis";
+                series_booking.name = "Calls";
+                series_booking.columns.template.tooltipText = "{categoryX}: [bold]{valueY}[/]";
+                series_booking.columns.template.fillOpacity = .8;
+                series_booking.columns.template.propertyFields.stroke = "lineColor";
+                series_booking.columns.template.propertyFields.fill = "lineColor";
+            });
+
+            showLoading();
+            setTimeout(function() {
+                $("#report_section").css("display", "");
+                hideLoading();
+                report_vue.getReportData();
+            }, FIRST_DELAY);
+
+            initObjects();
+        });
+    </script>
+{% endblock %}

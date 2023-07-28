@@ -1,0 +1,967 @@
+{% extends "adminpanel/base.html" %}
+{% block page_content %}
+{% load static %}
+    <style>
+        .fa-plus {
+            float:left;
+            font-size:25px;
+            margin-top:5px;
+            margin-left:10px;
+            color: var(--main-color-1);
+        }
+        .fa-plus:hover {
+            color: var(--main-color);
+        }
+    </style>
+
+    <section id="main_section" class="page-content area-padding-bottom" style="min-height:600px; display:none;">
+	<div class="phonenuber_sec">
+	 <span style="line-height:2.3; color:var(--caravan-dark-gray);">Tel: +1 xx xxx xx xx  |  <a href="mailto:support@autoservice.ai" style="color:var(--caravan-dark-gray)">support@autoservice.ai</a></span>
+	</div>
+        <div class="container-fluid " style="max-width:1240px;">
+            <div class="topbackground" id="user_tbl" style="margin-top:20px;">
+                <div style="width:98%; margin-left:1%;">
+                    <div class="row">
+                        <div class="col-8 col-md-3">
+                            <input v-model="filter_str" type="text" class="form-control" style="border-color:#bbb" placeholder="Filter ...">
+                        </div>
+                        <div class="col-4 col-md-9">
+                            <button v-on:click="onRegister" class="btn btn-success Register" style="float:right; margin-right:1%; font-size:14px; margin-bottom:10px;"
+                                data-target="#userRegisterModal" data-toggle="modal">Register <i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="tblWrap">
+                        <table class="table-bordered my-table">
+                            <thead>
+                                <th style="width:13%;">Email</th>
+                                <th style="width:15%;">First Name</th>
+                                <th style="width:15%;">Last Name</th>
+                                <th style="width:10%;">Phone Number</th>
+                                <th style="width:10%;">Company</th>
+                                <th style="width:8%">F Booked</th>
+                                <th style="width:8%;">F Transfer</th>
+                                <th style="width:16%;">Account Url</th>
+                                <th style="width:5%;"></th>
+                            </thead>
+                            <tbody>
+                                <tr v-if="total_page == 0">
+                                    <td colspan="10">
+                                        No data
+                                    </td>
+                                </tr>
+                                <tr v-else v-for="user in user_list">
+                                    <td>[[ user.email ]]</td>
+                                    <td>[[ user.first_name ]]</td>
+                                    <td>[[ user.last_name ]]</td>
+                                    <td>[[ user.phone_number ]]</td>
+                                    <td>[[ user.company_name ]]</td>
+                                    <td>[[ user.factor_booked ]]</td>
+                                    <td>[[ user.factor_transfer ]]</td>
+                                    <td>http://www.voicemail.ai/account/[[ user.uid ]]</td>
+                                    <!-- <td>http://54.197.42.170:8000/account/[[ user.uid ]]</td> -->
+                                    <td>
+                                        <i @click="onUpdate(user.id)" class="fa fa-edit" data-target="#userRegisterModal" data-toggle="modal"></i>
+                                        <i @click="onDelete(user.uid)" class="fa fa-trash"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" style="float:right !important;">
+                        <i v-on:click="onClickPrevious();" class="fa fa-arrow-left" style="padding-top:3px; padding-right:5px;"></i>
+                        <span v-if="total_page != 0">[[ cur_page ]] / [[ total_page ]]</span>
+                        <span v-if="total_page == 0">0 / 0</span>
+                        <i v-on:click="onClickNext();" class="fa fa-arrow-right" style="padding-top:3px; padding-left:5px;"></i>
+                    </div>
+                </div>
+
+                <div id="userRegisterModal" class="modal modal-adminpro-general default-popup-PrimaryModal fade font-family" role="dialog" style="color:#54595f;">
+                    <div class="modal-dialog" style="width:100%; max-width:1200px; font-size:16px;">
+                        <div class="modal-content">
+                            <div class="modal-header header-color-modal star-back-color" style=" color:white;">
+                                <h2 v-if="r_u_flag==1" class="modal-title Registertitle">Register Admin</h2>
+                                <h2 v-if="r_u_flag==2" class="modal-title Registertitle">Update Admin</h2>
+                                <div class="modal-close-area modal-close-df">
+                                    <a class="close star-back-color" data-dismiss="modal" href="#" style="color:#54595f; margin-top:-20px;"><i class="fa fa-close"></i></a>
+                                </div>
+                            </div>
+                            <div style="margin-top:15px;">
+                                <section class="content" style="width:96%; margin-left:2%;">
+                                    <div class="row">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3 ">
+                                            <label class="font-size14">Email (*)</label>
+                                            <input v-model="reg_email" class="form-control" :readonly="r_u_flag==2">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                           <label class="font-size14">First Name (*)</label>
+                                            <input v-model="reg_first_name" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14">Last Name (*)</label>
+                                            <input v-model="reg_last_name" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14">Phone Number (*)</label>
+                                            <input v-model="reg_phone_number" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14">Company (*)</label>
+                                            <select v-model="reg_company_id" class="form-control">
+                                                <option v-for="company in company_list" v-bind:value="company.id">
+                                                    [[ company.name ]]
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14">Factor Booked (*)</label>
+                                            <input v-model="reg_factor_booked" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14">Factor Transfer (*)</label>
+                                            <input v-model="reg_factor_transfer" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14">Agents</label>
+                                            <select v-model="s_agent" class="form-control" style="width:85%; float:left;">
+                                                <option v-for="agent in s_agent_list" v-bind:value="agent.id">
+                                                    [[ agent.name ]]
+                                                </option>
+                                            </select>
+                                            <i v-on:click="onAddAgentToAdmin(s_agent)" class="fa fa-plus"></i>
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph">
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style="overflow-x:auto;">
+                                            <table class="table-bordered agent-table Registertable" style="width:100%; min-width:1000px; font-size:15px;">
+                                                <thead>
+                                                    <th style="width:15%;">Name</th>
+                                                    <th style="width:10%;">Code</th>
+                                                    <th style="width:10%;">Type</th>
+                                                    <th style="width:15%;">OpenWeeklyFrom</th>
+                                                    <th style="width:15%;">OpenWeeklyTo</th>
+                                                    <th style="width:15%;">OpenSatFrom</th>
+                                                    <th style="width:15%;">OpenSatTo</th>
+                                                    <th style="width:5%;"></th>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-if="r_agent_list.length == 0">
+                                                        <td colspan="8">
+                                                            No agents
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-else v-for="agent in r_agent_list">
+                                                        <td>[[ agent.name ]]</td>
+                                                        <td>[[ agent.code ]]</td>
+                                                        <td v-if="agent.type==1">Inbound</td>
+                                                        <td v-else-if="agent.type==2">Marketing</td>
+                                                        <td v-else-if="agent.type==3">Voicemail</td>
+                                                        <td v-else></td>
+                                                        <td>[[ agent.open_weekly_from ]]</td>
+                                                        <td>[[ agent.open_weekly_to ]]</td>
+                                                        <td>[[ agent.open_sat_from ]]</td>
+                                                        <td>[[ agent.open_sat_to ]]</td>
+                                                        <td>
+                                                            <i @click="onDeleteAgentFromAdmin(agent.id)" class="fa fa-trash"></i>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                           <label class="font-size14">Advisors</label>
+                                            <select v-model="s_advisor" class="form-control" style="width:85%; float:left;">
+                                                <option v-for="advisor in s_advisor_list" v-bind:value="advisor.id">
+                                                    [[ advisor.name ]]
+                                                </option>
+                                            </select>
+                                            <i v-on:click="onAddAdvisorToAdmin(s_advisor)" class="fa fa-plus"></i>
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph">
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style="overflow-x:auto;">
+                                            <table class="table-bordered advisor-table Registertable" style="width:100%; min-width:1000px; font-size:15px;">
+                                                <thead>
+                                                    <th style="width:9%;">Name</th>
+                                                    <th style="width:9%;">Phone Number</th>
+                                                    <th style="width:10%;">Email</th>
+                                                    <th style="width:10%;">Company</th>
+                                                    <!--th style="width:7%;">Alert Threshold</th>
+                                                    <th style="width:10%;">Alert Phone Number</th>
+                                                    <th style="width:10%;">Alert Email</th>
+                                                    <th style="width:7%;">Sms Allowed From</th>
+                                                    <th style="width:7%;">Sms Allowed To</th>
+                                                    <th style="width:7%;">Email Allowed From</th>
+                                                    <th style="width:7%;">Email Allowed To</th>
+                                                    <th style="width:5%;"></th-->
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-if="r_advisor_list.length == 0">
+                                                        <td colspan="12">
+                                                            No advisors
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-else v-for="advisor in r_advisor_list">
+                                                        <td>[[ advisor.name ]]</td>
+                                                        <td>[[ advisor.phone_number ]]</td>
+                                                        <td>[[ advisor.email ]]</td>
+                                                        <td>[[ advisor.company_name ]]</td>
+                                                        <!--td>[[ advisor.alert_threshold ]] min</td>
+                                                        <td>[[ advisor.alert_phone_number ]]</td>
+                                                        <td>[[ advisor.alert_email ]]</td>
+                                                        <td>[[ advisor.sms_allowed_from ]]</td>
+                                                        <td>[[ advisor.sms_allowed_to ]]</td>
+                                                        <td>[[ advisor.email_allowed_from ]]</td>
+                                                        <td>[[ advisor.email_allowed_to ]]</td-->
+                                                        <td>
+                                                            <i @click="onDeleteAdvisorFromAdmin(advisor.id)" class="fa fa-trash"></i>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                             <label class="font-size14">Reports</label>
+                                            <i v-on:click="onAddReport" class="fa fa-plus" style="float:left; margin-top:-2px;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph">
+                                        <div class="col-6 col-sm-6 col-md-3 col-lg-3 col-xl-3">
+                                             <label class="font-size14">Type (*)</label>
+                                            <select v-model="rep_type" class="form-control">
+                                                <option value="100">FAQ</option>
+                                                <option value="1">Inbound</option>
+                                                <option value="2">Marketing</option>
+                                                <option value="3">Voicemail</option>
+                                                <option value="4">VM Dashboard</option>
+                                                <option value="50">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-3 col-lg-3 col-xl-3">
+                                             <label class="font-size14">Menu Name (*)</label>
+                                            <input v-model="rep_menu_name" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-3 col-lg-3 col-xl-3">
+                                             <label class="font-size14">Report Name (*)</label>
+                                            <input v-model="rep_report_name" class="form-control">
+                                        </div>
+                                        <div v-if="rep_type==50" class="col-6 col-sm-6 col-md-3 col-lg-3 col-xl-3">
+                                            <label>Url (*)</label>
+                                            <input v-model="rep_url" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div v-if="rep_type != 100 && rep_type != 50" class="row paragraph">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                                            <label class="font-size20">Period Type (*)</label><br>
+                                            <input v-model="rep_period_type" type="checkbox" id="p_today" value="1">
+                                            <label class="font-size13" for="p_today">Today</label>
+                                            &nbsp;
+                                            <input v-model="rep_period_type" type="checkbox" id="p_yesterday" value="2">
+                                            <label class="font-size13" for="p_yesterday">Yesterday</label>
+                                            &nbsp;
+                                            <input v-model="rep_period_type" type="checkbox" id="p_last_week" value="3">
+                                            <label class="font-size13" for="p_last_week">Last Week</label>
+                                            &nbsp;
+                                            <input v-model="rep_period_type" type="checkbox" id="p_last_month" value="4">
+                                            <label class="font-size13" for="p_last_month">Last Month</label>
+                                            &nbsp;
+                                            <input v-model="rep_period_type" type="checkbox" id="p_from_to" value="5">
+                                            <label class="font-size13" for="p_from_to">From/To</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="row paragraph">
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style="overflow-x:auto;">
+                                            <table class="table-bordered report-table Registertable" style="width:100%; min-width:1000px; font-size:15px;">
+                                                <thead>
+                                                    <th style="width:15%;">Type</th>
+                                                    <th style="width:20%;">Menu Name</th>
+                                                    <th style="width:20%;">Report Name</th>
+                                                    <th style="width:25%;">Period Type</th>
+                                                    <th style="width:5%;"></th>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-if="report_list.length==0">
+                                                        <td colspan="5">
+                                                            No reports
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-else v-for="report in report_list">
+                                                        <td v-if="report.type==100">FAQ</td>
+                                                        <td v-else-if="report.type==1">Inbound</td>
+                                                        <td v-else-if="report.type==2">Marketing</td>
+                                                        <td v-else-if="report.type==3">Voicemail</td>
+                                                        <td v-else-if="report.type==4">VM Dashboard</td>
+                                                        <td v-else-if="report.type==50">Other</td>
+                                                        <td v-else></td>
+                                                        <td>[[ report.menu_name ]]</td>
+                                                        <td>[[ report.report_name ]]</td>
+                                                        <td v-if="report.type != 50">
+                                                            <div v-for="p_type in report.period_type">
+                                                                <span v-if="p_type==1">Today</span>
+                                                                <span v-if="p_type==2">Yesterday</span>
+                                                                <span v-if="p_type==3">Last Week</span>
+                                                                <span v-if="p_type==4">Last Month</span>
+                                                                <span v-if="p_type==5">From/To</span>
+                                                            </div>
+                                                        </td>
+                                                        <td v-else>[[ report.url ]]</td>
+                                                        <td>
+                                                            <i @click="onDeleteReport(report.menu_name)" class="fa fa-trash"></i>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div v-if="r_u_flag==2" class="row" style="margin-top:20px;">
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                                            <label>Account URL</label>
+                                            <span class="form-control" style="border:none;">http://www.voicemail.ai:8000/account/[[ user_uid ]]</span>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                            <div class="modal-footer">
+                                <button v-on:click="onRegisterUser()" id="confirm_register" class="btn btn-success">Confirm</button>
+                                <button id="btn_close" class="btn btn-success" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script type="text/javascript">
+        var usertbl_vue;        // usertbl vue instance
+        var user_list = [];
+        var agent_list = [];
+        var advisor_list = [];
+        var company_list = [];
+        var i, j;
+
+        // *************** Init Data *************** //
+        function initData() {
+            i = 0;
+            {% for user in user_list %}
+                user_list[i] = {
+                    "id": {{ user.id }},
+                    "uid": {{ user.uid }},
+                    "email": "{{ user.email }}",
+                    "first_name": "{{ user.first_name }}",
+                    "last_name": "{{ user.last_name }}",
+                    "phone_number": "{{ user.phone_number }}",
+                    "company_id": {{ user.company_id }},
+                    "company_name": "{{ user.company_name }}",
+                    "factor_booked": {{ user.factor_booked }},
+                    "factor_transfer": {{ user.factor_transfer }},
+                    "agents": [],
+                    "advisors": [],
+                    "reports": [],
+                };
+                {% for agent in user.agents %}
+                    user_list[i]["agents"].push({{ agent }});
+                {% endfor %}
+
+                {% for advisor in user.advisors %}
+                    user_list[i]["advisors"].push({{ advisor }});
+                {% endfor %}
+
+                j = 0;
+                {% for report in user.reports %}
+                    user_list[i]["reports"][j] = {
+                        "type": {{ report.type }},
+                        "menu_name": "{{ report.menu_name }}",
+                        "report_name": "{{ report.report_name }}",
+                        "period_type": [],
+                        "url": "{{ report.url }}"
+                    };
+                    {% for p_type in report.period_type %}
+                        user_list[i]["reports"][j]["period_type"].push({{ p_type }});
+                    {% endfor %}
+                    j++;
+                {% endfor %}
+                i++;
+            {% endfor %}
+
+            {% for company in company_list %}
+                company_list.push({
+                    "id": {{ company.id }},
+                    "name": "{{ company.name }}"
+                });
+            {% endfor %}
+
+            {% for agent in agent_list %}
+                agent_list.push({
+                    "id": {{ agent.id }},
+                    "name": "{{ agent.name }}",
+                    "code": "{{ agent.code }}",
+                    "type": {{ agent.type }},
+                    "open_weekly_from": "{{ agent.open_weekly_from }}",
+                    "open_weekly_to": "{{ agent.open_weekly_to }}",
+                    "open_sat_from": "{{ agent.open_sat_from }}",
+                    "open_sat_to": "{{ agent.open_sat_to }}"
+                });
+            {% endfor %}
+
+            i = 0;
+            {% for advisor in advisor_list %}
+                advisor_list[i] = {
+                    "id": {{ advisor.id }},
+                    "name": "{{ advisor.name }}",
+                    "phone_number": "{{ advisor.phone_number }}",
+                    "email": "{{ advisor.email }}",
+                    "company_id": {{ advisor.company_id }},
+                    "company_name": "",
+                    "caller_response_template": "{{ advisor.caller_response_template }}",
+                    "advisor_response_template": "{{ advisor.advisor_response_template }}",
+                    //"alert_threshold": {{ advisor.alert_threshold }},
+                    //"alert_phone_number": "{{ advisor.alert_phone_number }}",
+                    //"alert_email": "{{ advisor.alert_email }}",
+                    //"sms_allowed_from": "{{ advisor.sms_allowed_from }}",
+                    //"sms_allowed_to": "{{ advisor.sms_allowed_to }}",
+                    //"email_allowed_from": "{{ advisor.email_allowed_from }}",
+                    //"email_allowed_to": "{{ advisor.email_allowed_to }}",
+                    "buddy_list": []
+                };
+
+                {% for buddy in advisor.buddy_list %}
+                    advisor_list[i]["buddy_list"].push({
+                        "name": "{{ buddy.name }}",
+                        "phone_number": "{{ buddy.phone_number }}",
+                        "email": "{{ buddy.email }}"
+                    });
+                {% endfor %}
+
+                for (j = 0; j < company_list.length; j++)
+                    if (company_list[j]["id"] == advisor_list[i]["company_id"]) {
+                        advisor_list[i]["company_name"] = company_list[j]["name"];
+                        break;
+                    }
+                i++;
+            {% endfor %}
+        }
+
+        // *************** Document Ready *************** //
+        $(document).ready(function() {
+            initData();
+
+            showLoading();
+            setTimeout(function() {
+                $("#main_section").css("display", "");
+                hideLoading();
+            }, FIRST_DELAY);
+
+            // *************** User Table Vue Instance *************** //
+            usertbl_vue = new Vue({
+                delimiters: ['[[', ']]'],
+                el : "#user_tbl",
+                data: {
+                    r_u_flag: 1,
+                    cur_page: 1,
+                    total_user: {{ total_user }},
+                    total_page: {{ total_page }},
+                    user_list: user_list,
+                    filter_str: "",
+
+                    s_agent_list: [],
+                    r_agent_list: [],
+                    s_agent: "",
+
+                    s_advisor_list: [],
+                    r_advisor_list: [],
+                    s_advisor: "",
+
+                    report_list: [],
+                    rep_type: "",
+                    rep_menu_name: "",
+                    rep_report_name: "",
+                    rep_period_type: [],
+                    rep_url: "",
+
+                    user_uid: "",
+                    reg_email: "",
+                    reg_first_name: "",
+                    reg_last_name: "",
+                    reg_phone_number: "",
+                    reg_company_id: "",
+                    reg_factor_booked: 1,
+                    reg_factor_transfer: 1,
+
+                    company_list: company_list,
+                },
+                methods: {
+                    // *************** OnClick Register User *************** //
+                    onRegister: function() {
+                        this.r_u_flag = 1;
+                        this.reg_email = this.reg_first_name = this.reg_last_name = this.reg_phone_number = this.reg_company_id = "";
+                        this.s_agent_list = [];
+                        this.r_agent_list = [];
+                        var i;
+                        for (i = 0; i < agent_list.length; i++) {
+                            this.s_agent_list.push(agent_list[i]);
+                        }
+                        this.s_agent = "";
+
+                        this.s_advisor_list = [];
+                        this.r_advisor_list = [];
+                        for (i = 0; i < advisor_list.length; i++) {
+                            this.s_advisor_list.push(advisor_list[i]);
+                        }
+                        this.s_advisor = "";
+
+                        this.rep_type = this.rep_menu_name = this.rep_report_name = this.rep_agent_type = "";
+                        this.report_list = [];
+                        this.rep_period_type = [];
+                        this.rep_url = "";
+
+                        this.reg_factor_booked = this.reg_factor_transfer = 1;
+                    },
+
+                    // *************** OnClick Update User *************** //
+                    onUpdate: function(id) {
+                        var i, j, k;
+                        var idx = -1;
+                        this.r_u_flag = 2;
+
+                        this.r_agent_list = [];
+                        this.s_agent_list = [];
+                        this.s_agent = "";
+
+                        this.s_advisor_list = [];
+                        this.r_advisor_list = [];
+                        this.s_advisor = "";
+
+                        this.rep_type = this.rep_menu_name = this.rep_report_name = this.rep_agent_type = "";
+                        this.rep_period_type = [];
+                        this.rep_url = "";
+
+                        for (i = 0; i < agent_list.length; i++)
+                            this.s_agent_list.push(agent_list[i]);
+
+                        for (i = 0; i < advisor_list.length; i++)
+                            this.s_advisor_list.push(advisor_list[i]);
+
+                        for (i = 0; i < this.user_list.length; i++) {
+                            if (this.user_list[i]["id"] == id) {
+                                idx = i;
+                                break;
+                            }
+                        }
+
+                        if (idx == -1) return;
+
+                        var user = this.user_list[idx];
+                        this.user_uid = user["uid"];
+                        this.reg_email = user["email"];
+                        this.reg_first_name = user["first_name"];
+                        this.reg_last_name = user["last_name"];
+                        this.reg_phone_number = user["phone_number"];
+                        this.reg_company_id = user["company_id"];
+                        this.report_list = user["reports"];
+                        this.reg_factor_booked = user["factor_booked"];
+                        this.reg_factor_transfer = user["factor_transfer"];
+
+                        for (i = 0; i < user["agents"].length; i++) {
+                            idx = -1;
+                            for (j = 0; j < agent_list.length; j++) {
+                                if (user["agents"][i] == agent_list[j]["id"]) {
+                                    idx = j;
+                                    break;
+                                }
+                            }
+                            if (idx == -1) continue;
+                            var agent = agent_list[idx];
+                            this.r_agent_list.push(agent);
+
+                            for (j = 0; j < this.s_agent_list.length; j++) {
+                                if (this.s_agent_list[j]["id"] == agent["id"]) {
+                                    this.s_agent_list.splice(j, 1);
+                                    break;
+                                }
+                            }
+                        }
+
+                        for (i = 0; i < user["advisors"].length; i++) {
+                            idx = -1;
+                            for (j = 0; j < advisor_list.length; j++) {
+                                if (user["advisors"][i] == advisor_list[j]["id"]) {
+                                    idx = j;
+                                    break;
+                                }
+                            }
+                            if (idx == -1) continue;
+                            var advisor = advisor_list[idx];
+                            this.r_advisor_list.push(advisor);
+
+                            for (j = 0; j < this.s_advisor_list.length; j++) {
+                                if (this.s_advisor_list[j]["id"] == advisor["id"]) {
+                                    this.s_advisor_list.splice(j, 1);
+                                    break;
+                                }
+                            }
+                        }
+                    },
+
+                    // *************** OnClick Delete User *************** //
+                    onDelete: function(uid) {
+                        if (!confirm("Do you want to delete this user?")) return;
+                        $.ajax({
+                            type: "POST",
+                            url: "/admin/delete_user",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "uid": uid
+                            },
+                            async: false,
+                            success: function(res) {
+                                for (var i = 0; i < usertbl_vue.user_list.length; i++) {
+                                    if (usertbl_vue.user_list[i]["uid"] == uid) {
+                                        usertbl_vue.user_list.splice(i, 1);
+                                        usertbl_vue.total_user--;
+                                        usertbl_vue.total_page = Math.ceil(usertbl_vue.total_user / 15);
+                                    }
+                                }
+                                showMessage(alert_list["0x10005"]["mode"],
+                                            alert_list["0x10005"]["title"],
+                                            alert_list["0x10005"]["msg"], 5000);
+                            },
+                            error: function(res) {
+                                showMessage(alert_list["0xF0001"]["mode"],
+                                            alert_list["0xF0001"]["title"],
+                                            alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+
+                    // *************** OnClick Add Agent To Admin *************** //
+                    onAddAgentToAdmin: function(agent_id) {
+                        if (agent_id === "") return;
+                        var i;
+                        for (i = 0; i < this.s_agent_list.length; i++) {
+                            var agent = this.s_agent_list[i];
+                            if (agent["id"] == agent_id) {
+                                this.r_agent_list.push(agent);
+                                this.s_agent_list.splice(i, 1);
+                            }
+                        }
+                    },
+
+                    // *************** OnClick Delete Agent From Admin *************** //
+                    onDeleteAgentFromAdmin: function(agent_id) {
+                        var i;
+                        for (i = 0; i < this.r_agent_list.length; i++) {
+                            var agent = this.r_agent_list[i];
+                            if (agent["id"] == agent_id) {
+                                this.s_agent_list.push(agent);
+                                this.r_agent_list.splice(i, 1);
+                            }
+                        }
+                    },
+
+                    // *************** OnClick Add Advisor To Admin *************** //
+                    onAddAdvisorToAdmin: function(advisor_id) {
+                        if (advisor_id === "") return;
+                        var i;
+                        for (i = 0; i < this.s_advisor_list.length; i++) {
+                            var advisor = this.s_advisor_list[i];
+                            if (advisor["id"] == advisor_id) {
+                                this.r_advisor_list.push(advisor);
+                                this.s_advisor_list.splice(i, 1);
+                            }
+                        }
+                    },
+
+                    // *************** OnClick Delete Advisor From Admin *************** //
+                    onDeleteAdvisorFromAdmin: function(advisor_id) {
+                        var i;
+                        for (i = 0; i < this.r_advisor_list.length; i++) {
+                            var advisor = this.r_advisor_list[i];
+                            if (advisor["id"] == advisor_id) {
+                                this.s_advisor_list.push(advisor);
+                                this.r_advisor_list.splice(i, 1);
+                            }
+                        }
+                    },
+
+                    // *************** OnClick Add Report *************** //
+                    onAddReport: function() {
+                        if (this.rep_type === "" || this.rep_menu_name === "" || this.rep_report_name === "") {
+                            showMessage(alert_list["0x10001"]["mode"],
+                                        alert_list["0x10001"]["title"],
+                                        alert_list["0x10001"]["msg"], 5000);
+                            return;
+                        }
+                        if (this.rep_type != 50 && this.rep_type != 100 && this.rep_period_type.length == 0) {
+                            showMessage(alert_list["0x1000B"]["mode"],
+                                        alert_list["0x1000B"]["title"],
+                                        alert_list["0x1000B"]["msg"], 5000);
+                            return;
+                        }
+                        if (this.rep_type == 50 && this.rep_url == "") {
+                            showMessage(alert_list["0x1000C"]["mode"],
+                                        alert_list["0x1000C"]["title"],
+                                        alert_list["0x1000C"]["msg"], 5000);
+                            return;
+                        }
+
+                        var i, j, tmp;
+                        for (i = 0; i < this.rep_period_type.length; i++) {
+                            for (j = i + 1; j < this.rep_period_type.length; j++) {
+                                if (this.rep_period_type[i] > this.rep_period_type[j]) {
+                                    tmp = this.rep_period_type[i];
+                                    this.rep_period_type[i] = this.rep_period_type[j];
+                                    this.rep_period_type[j] = tmp;
+                                }
+                            }
+                        }
+
+                        for (i = 0; i < this.report_list.length; i++) {
+                            if (this.report_list[i]["menu_name"] == this.rep_menu_name) {
+                                showMessage(alert_list["0x1000A"]["mode"],
+                                            alert_list["0x1000A"]["title"],
+                                            alert_list["0x1000A"]["msg"], 5000);
+                                return;
+                            }
+                        }
+
+                        this.report_list.push({
+                            "id": Math.ceil(Math.random() * 1000000),
+                            "type": parseInt(this.rep_type),
+                            "menu_name": this.rep_menu_name,
+                            "report_name": this.rep_report_name,
+                            "period_type": this.rep_period_type,
+                            "url": this.rep_url,
+                        });
+                    },
+
+                    // *************** OnClick Delete Report *************** //
+                    onDeleteReport: function(menu_name) {
+                        var i;
+                        for (i = 0; i < this.report_list.length; i++) {
+                            if (this.report_list[i]["menu_name"] == menu_name) {
+                                this.report_list.splice(i, 1);
+                                break;
+                            }
+                        }
+                    },
+
+                    // *************** OnConfirm Register User *************** //
+                    onRegisterUser: function() {
+                        var param = {};
+                        var agents = [];
+                        var advisors = [];
+                        var i;
+                        if (this.reg_email == "" || this.reg_first_name == "" || this.reg_last_name == "" || this.reg_phone_number == ""
+                            || this.reg_company_id == "" || this.reg_factor_booked == "" || this.reg_factor_transfer == "") {
+                            showMessage(alert_list["0x10001"]["mode"],
+                                        alert_list["0x10001"]["title"],
+                                        alert_list["0x10001"]["msg"], 5000);
+                            return;
+                        }
+                        for (i = 0; i < this.r_agent_list.length; i++)
+                            agents.push(this.r_agent_list[i]["id"]);
+                        for (i = 0; i < this.r_advisor_list.length; i++)
+                            advisors.push(this.r_advisor_list[i]["id"]);
+
+                        param = {
+                            email: this.reg_email,
+                            first_name: this.reg_first_name,
+                            last_name: this.reg_last_name,
+                            phone_number: this.reg_phone_number,
+                            company_id: this.reg_company_id,
+                            factor_booked: this.reg_factor_booked,
+                            factor_transfer: this.reg_factor_transfer,
+                            agents: agents,
+                            advisors: advisors,
+                            reports: this.report_list
+                        };
+
+                        // ---------- register case ---------- //
+                        if (this.r_u_flag == 1) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/admin/register_user",
+                                beforeSend: function( xhr ) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                                },
+                                data: {
+                                    "param": JSON.stringify(param)
+                                },
+                                async: false,
+                                success: function(res) {
+                                    var tmp_ary = new Array();
+                                    var i;
+                                    var agents = [];
+
+                                    for (i = 0; i < usertbl_vue.user_list.length; i++)
+                                        tmp_ary.push(usertbl_vue.user_list[i]);
+
+                                    for (i = 0; i < usertbl_vue.r_agent_list.length; i++)
+                                        agents.push(usertbl_vue.r_agent_list[i]["id"]);
+
+                                    var tmp_company_name = "";
+                                    for (i = 0; i < company_list.length; i++) {
+                                        if (company_list[i]["id"] == usertbl_vue.reg_company_id)
+                                            tmp_company_name = company_list[i]["name"];
+                                    }
+
+                                    usertbl_vue.user_list = new Array();
+                                    usertbl_vue.user_list.push({
+                                        "uid": res,
+                                        "email": usertbl_vue.reg_email,
+                                        "first_name": usertbl_vue.reg_first_name,
+                                        "last_name": usertbl_vue.reg_last_name,
+                                        "phone_number": usertbl_vue.reg_phone_number,
+                                        "company_id": usertbl_vue.reg_company_id,
+                                        "company_name": tmp_company_name,
+                                        "factor_booked": usertbl_vue.reg_factor_booked,
+                                        "factor_transfer": usertbl_vue.reg_factor_transfer,
+                                        "agents": agents,
+                                        "advisors": advisors,
+                                        "reports": usertbl_vue.report_list,
+                                    });
+
+                                    for (i = 0; i < Math.min(tmp_ary.length, 14); i++)
+                                        usertbl_vue.user_list[i+1] = tmp_ary[i];
+
+                                    usertbl_vue.total_user++;
+                                    usertbl_vue.total_page = Math.ceil(usertbl_vue.total_user / 15);
+
+                                    showMessage(alert_list["0x10002"]["mode"],
+                                                alert_list["0x10002"]["title"],
+                                                alert_list["0x10002"]["msg"], 5000);
+
+                                    $("#btn_close").trigger("click");
+                                },
+                                error: function(res) {
+                                    if (res["responseText"] == "existing_email") {
+                                        showMessage(alert_list["0x10003"]["mode"],
+                                                    alert_list["0x10003"]["title"],
+                                                    alert_list["0x10003"]["msg"], 5000);
+                                    } else if (res["responseText"] == "error") {
+                                        showMessage(alert_list["0xF0001"]["mode"],
+                                                    alert_list["0xF0001"]["title"],
+                                                    alert_list["0xF0001"]["msg"], 5000);
+                                    }
+                                }
+                            });
+                        }
+                        // ---------- update case ---------- //
+                        else if (this.r_u_flag == 2) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/admin/update_user",
+                                beforeSend: function( xhr ) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                                },
+                                data: {
+                                    "param": JSON.stringify(param)
+                                },
+                                async: false,
+                                success: function(res) {
+                                    var i;
+                                    var agents = [];
+
+                                    for (i = 0; i < usertbl_vue.r_agent_list.length; i++)
+                                        agents.push(usertbl_vue.r_agent_list[i]["id"]);
+
+                                    var tmp_company_name = "";
+                                    for (i = 0; i < company_list.length; i++) {
+                                        if (company_list[i]["id"] == usertbl_vue.reg_company_id)
+                                            tmp_company_name = company_list[i]["name"];
+                                    }
+
+                                    for (i = 0; i < usertbl_vue.user_list.length; i++) {
+                                        var user = usertbl_vue.user_list[i];
+                                        if (user["email"] == usertbl_vue.reg_email) {
+                                            usertbl_vue.user_list[i]["first_name"] = usertbl_vue.reg_first_name;
+                                            usertbl_vue.user_list[i]["last_name"] = usertbl_vue.reg_last_name;
+                                            usertbl_vue.user_list[i]["phone_number"] = usertbl_vue.reg_phone_number;
+                                            usertbl_vue.user_list[i]["company_id"] = usertbl_vue.reg_company_id;
+                                            usertbl_vue.user_list[i]["company_name"] = tmp_company_name;
+                                            usertbl_vue.user_list[i]["factor_booked"] = usertbl_vue.reg_factor_booked;
+                                            usertbl_vue.user_list[i]["factor_transfer"] = usertbl_vue.reg_factor_transfer;
+                                            usertbl_vue.user_list[i]["agents"] = agents;
+                                            usertbl_vue.user_list[i]["advisors"] = advisors;
+                                            usertbl_vue.user_list[i]["reports"] = usertbl_vue.report_list;
+                                        }
+                                    }
+                                    showMessage(alert_list["0x10004"]["mode"],
+                                                alert_list["0x10004"]["title"],
+                                                alert_list["0x10004"]["msg"], 5000);
+
+                                    $("#btn_close").trigger("click");
+                                },
+                                error: function(res) {
+                                    showMessage(alert_list["0xF0001"]["mode"],
+                                                alert_list["0xF0001"]["title"],
+                                                alert_list["0xF0001"]["msg"], 5000);
+                                }
+                            });
+                        }
+                    },
+
+                    // *************** Get Page Users *************** //
+                    getPageUsers: function() {
+                        $.ajax({
+                            type: "POST",
+                            url: "/admin/get_page_users",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "filter_str": this.filter_str,
+                                "cur_page": this.cur_page
+                            },
+                            async: false,
+                            success: function(res) {
+                                res = JSON.parse(res);
+                                usertbl_vue.total_page = res["total_page"];
+                                res = res["user_list"];
+                                usertbl_vue.user_list = new Array();
+                                for (var i = 0; i < res.length; i++) {
+                                    usertbl_vue.user_list.push(res[i]);
+                                }
+                            }
+                        });
+                    },
+
+                    // *************** OnClick Previous Page *************** //
+                    onClickPrevious: function() {
+                        if (this.cur_page <= 1)
+                            return;
+                        this.cur_page--;
+                        this.getPageUsers();
+                    },
+
+                    // *************** OnClick Next Page *************** //
+                    onClickNext: function() {
+                        if (this.cur_page >= this.total_page)
+                            return;
+                        this.cur_page++;
+                        this.getPageUsers();
+                    }
+                },
+                watch: {
+                    // *************** OnUpdate Filter String *************** //
+                    filter_str: function() {
+                        this.cur_page = 1;
+                        this.getPageUsers();
+                    }
+                }
+            });
+        })
+
+    </script>
+{% endblock %}

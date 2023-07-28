@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Autoservice AI Dashboard</title>
+    <link rel="shortcut icon" href="https://www.autoservice.ai/wp-content/uploads/2019/03/Untitled-1.png" type="image/x-icon">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:ital,wght@0,100;0,400;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Rajdhani:wght@300;400;500;600;700&family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.css" rel="stylesheet" type="text/css">
+    <link href="{% static "library/themes/pastel/css/style.css" %}" rel="stylesheet">
+    <link href="{% static "library/themes/pastel/css/responsive.css" %}" rel="stylesheet">
+    <link href="{% static "atsdashboard/css/Lobibox.min.css" %}" rel="stylesheet" >
+    <link href="{% static "atsdashboard/css/notifications.css" %}" rel="stylesheet">
+    <link href="{% static "atsdashboard/css/style.css" %}" rel="stylesheet">
+
+    <link href="{% static "atsdashboard/css/style_extra_small.css" %}" media="screen and (max-width:575px)" rel="stylesheet" type="text/css" />
+    <link href="{% static "atsdashboard/css/style_small.css" %}" media="screen and (min-width:576px) and (max-width:767px)" rel="stylesheet" type="text/css" />
+    <link href="{% static "atsdashboard/css/style_medium.css" %}" media="screen and (min-width:768px) and (max-width:991px)" rel="stylesheet" type="text/css" />
+    <link href="{% static "atsdashboard/css/style_large.css" %}" media="screen and (min-width:992px) and (max-width:1199px)" rel="stylesheet" type="text/css" />
+    <link href="{% static "atsdashboard/css/style_extra_large.css" %}" media="screen and (min-width:1200px)" rel="stylesheet" type="text/css" />
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+    <script src="{% static "atsdashboard/js/Lobibox.js" %}"></script>
+    <script src="{% static "atsdashboard/js/common.js" %}"></script>
+    <style>
+        @media (max-width:992px) {
+            #laptopMenu {
+                display:none;
+            }
+        }
+        .a-tag {
+            color: gray;
+        }
+        .a-tag:hover {
+            color: #438ffe;
+        }
+		.page-content {
+		height: auto;
+		width: 80%;
+		float: right;
+		}
+
+    </style>
+</head>
+<body>
+    <div class="site-main1" style="border-top:3px solid; border-color:#25a9bd;">
+        <!--================Header Menu Area =================-->
+        <!--div class="container-fluid phonenuber" style="height:30px; max-width:1240px;">
+            <span style="line-height:2.3; color:var(--caravan-dark-gray);">Tel: +1 xx xxx xx xx  |  <a href="mailto:support@autoservice.ai" style="color:var(--caravan-dark-gray)">support@autoservice.ai</a></span>
+        </div-->
+        <!--header class="header_area" style="background-color:#ececec;">
+            <div class="main_menu">
+                <nav class="navbar navbar-expand-lg navbar-light" style="height:100px;">
+                    <div class="container-fluid" style="max-width:1240px;">
+                        <a class="navbar-brand logo_h" href=""><img src="{% static "atsdashboard/asset/logo/logo.png" %}" alt="" style="width:180px;"></a>
+                    </div>
+                </nav>
+            </div>
+        </header-->
+		<div class="header_sec_middel">
+        <header class="header_area header_menu_sec" style="background-color:var(--main-color-1);">
+            <div class="main-menu">
+			  <div class="container-fluid logoimg" style="max-width:1240px;">
+                        <a class="navbar-brand logo_h" href=""><img src="{% static "atsdashboard/asset/logo/logo.png" %}" alt="" style="width:180px;"></a>
+                    </div>
+                <nav class="navbar navbar-expand-lg navbar-light">
+                    <div class="container-fluid" style="max-width:1240px;">
+                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+						
+                        <div id="laptopMenu" class="collapse navbar-collapse offset" id="navbarSupportedContent" style="">
+                            <ul class="nav navbar-nav menu_nav menu_sec" style="justify-content:right !important">
+                               
+                                <li class="nav-item">
+                                    <a class="nav-link" data-target="#userProfileModal" data-toggle="modal" style="cursor:pointer;">
+                                    <i class="fa fa-user"></i>Profile</a>
+                                </li>
+                                <li class="nav-item"><a class="nav-link" href="/"><i class="fa fa-lock" aria-hidden="true"></i>Admin</a></li>
+                                <li class="nav-item"><a class="nav-link" href="advisor"><i class="fa fa-address-book-o"></i>Advisor</a></li>
+                                <li class="nav-item"><a class="nav-link" href="agent" ><i class="fa fa-user-secret"></i>Agent</a></li>
+                                <li class="nav-item"><a class="nav-link" href="company" ><i class="fa fa-building" aria-hidden="true"></i>Company</a></li>
+                                <!--li class="nav-item"><a class="nav-link" href="/admin-cpanel/password_change/"><i class="fa fa-lock" aria-hidden="true"></i>Change Password</a></li-->
+								 <li class="nav-item"><a class="nav-link" href="/logout">
+                                    <i class="fa fa-sign-in"></i>&nbsp;Logout</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="mobileMenu">
+                            <div class="collapse navbar-collapse offset" id="navbarSupportedContent" style="overflow-y:hidden;">
+                                <ul class="nav navbar-nav menu_nav" style="justify-content:right !important">
+                                    <!--li class="nav-item"><a class="nav-link" href="/admin-cpanel/password_change/">Change Password</a></li-->
+                                    <li class="nav-item"><a class="nav-link" href="company">Company</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="agent">Agent</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="advisor">Advisor</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="/">Admin</a></li>
+                                    <li class="nav-item" style="background-color:var(#7979794f); line-height:20px;">
+                                        <a class="nav-link" data-target="#userProfileModal" data-toggle="modal" style="cursor:pointer;">
+                                        <i class="fa fa-user" style="color:white;"></i>Profile</a>
+                                    </li>
+                                    <li class="nav-item"><a class="nav-link" href="/logout">
+                                        <i class="fa fa-sign-in"></i>&nbsp;Logout</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </header>
+        <div id="loading" style="position:absolute; z-index:99999; display:none; margin-left:40%;top: 30%; height: 900px;">
+            <img src="{% static "atsdashboard/asset/gif/loading.gif" %}">
+        </div>
+        {% block page_content %}
+        {% endblock %}
+</div>
+        <!-- ================ start footer Area ================= -->
+        <footer class="footer_sec" style="background-color:#369be5;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12" style="text-align:center;">
+					<div class="copyright">
+					   <div class="col-sm-9">
+                          <span>© 2020 Autoservice.ai. All Rights Reserved</span>
+                        </div>
+						<div class="col-sm-3">
+                        <a href="https://www.autoservice.ai/privacy-policy/" class="a-tag">Privacy Policy</a>
+                        &nbsp;&nbsp;
+                        <a href="https://www.autoservice.ai/terms-of-service/" class="a-tag">Terms of Service</a>
+						</div>
+					 </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <div id="waiting" class=""></div>
+    </div>
+
+    <div id="userProfileModal" class="modal modal-adminpro-general default-popup-PrimaryModal fade" role="dialog" style="color:#54595f;">
+        <div class="modal-dialog" style="width:500px; max-width:500px; font-size:16px;">
+            <div class="modal-content">
+                <div class="modal-header header-color-modal star-back-color" style="height:50px; color:white;">
+                    <h2 class="modal-title">Profile</h2>
+                    <div class="modal-close-area modal-close-df">
+                        <a class="close star-back-color" data-dismiss="modal" href="#" style="color:#54595f; margin-top:-25px;"><i class="fa fa-close"></i></a>
+                    </div>
+                </div>
+                <div style="margin-top:15px">
+                    <section class="content" style="width:96%; margin-left:2%;">
+                        <div class="row">
+                            <div class="col-md-3"></div>
+                            <div class="col-md-6">
+                                <span style="font-size:16px;">Email: {{ email }}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3"></div>
+                            <div class="col-md-6" style="margin-top:15px;">
+                                <span style="font-size:16px;">Password: {{ password }}</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,119 @@
+/* Service  Area css
+============================================================================================ */
+
+.service-area{
+	background: $dip;
+	.single-service{
+		border: 1px solid transparent;
+		background: $bg_one;
+		text-align: center;
+		padding: 55px 20px 30px;
+		@include transition;
+
+
+		.service-content{
+			h5{
+				font-size: 24px;
+				color: $white;
+				margin-bottom: 36px;
+			}
+			p{
+				line-height: 27px;
+				font-size:16px;
+			}
+
+		}
+		.service-icon {
+			margin-bottom: 23px;
+			img{
+				-webkit-filter: grayscale(100%);
+				filter: grayscale(100%);
+				@include transition();
+			}
+		}
+		&:hover{
+			.service-icon {
+				img{
+					-webkit-filter: grayscale(0);
+					filter: grayscale(0);
+				}
+			}
+
+		}
+	}
+	.col-xl-4:nth-child(1),.col-xl-4:nth-child(2),.col-xl-4:nth-child(3){
+		border-bottom: 1px solid #302f3b;
+	}
+	.col-xl-4:nth-child(1),.col-xl-4:nth-child(2),.col-xl-4:nth-child(4),.col-xl-4:nth-child(5){
+		border-right: 1px solid #302f3b;
+	}
+
+}
+.service-page.service-area{
+	background: #fff;
+	.single-service{
+		background: $bg_one;
+	}
+
+}
+
+.service-area.area-padding {
+	padding-top: 30px;
+}
+
+
+
+.service-area.light-version{
+	background: none;
+	.single-service{
+		border: 1px solid transparent;
+		background: none;
+		text-align: center;
+		padding: 55px 20px 30px;
+		@include transition;
+
+
+		.service-content{
+			h5{
+				font-size: 24px;
+				color: $dip;
+				margin-bottom: 36px;
+			}
+			p{
+				line-height: 27px;
+				font-size:16px;
+				color: pfont;
+			}
+
+		}
+		.service-icon {
+			margin-bottom: 23px;
+			img{
+				-webkit-filter: grayscale(100%);
+				filter: grayscale(100%);
+				@include transition();
+			}
+		}
+		&:hover{
+			.service-icon {
+				img{
+					-webkit-filter: grayscale(0);
+					filter: grayscale(0);
+				}
+			}
+
+		}
+	}
+	.col-xl-4:nth-child(1),.col-xl-4:nth-child(2),.col-xl-4:nth-child(3){
+		border-bottom: 1px solid #f3f3f2;
+	}
+	.col-xl-4:nth-child(1),.col-xl-4:nth-child(2),.col-xl-4:nth-child(4),.col-xl-4:nth-child(5){
+		border-right: 1px solid #f3f3f2;
+	}
+
+}
+
+.service-area.area-padding.light-version {
+	padding-top: 140px;
+	padding-bottom: 0;
+}

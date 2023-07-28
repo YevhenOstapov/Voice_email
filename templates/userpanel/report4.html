@@ -1,0 +1,304 @@
+{% extends "userpanel/base.html" %}
+{% block page_content %}
+{% load static %}
+    <style>
+        i:hover {
+            color: deeppink;
+        }
+    </style>
+    <section id="report_section" class="content-header" style="display:none;">
+	<div class="report_sec1">
+        <span class="fontsize20 ">[[ report_name ]]</span>
+        <div class="row paragrah">
+            <div class="col-md-2">
+                <label>From</label>
+                <div id="from_date_div" class="input-group date" data-date-format="yyyy-mm-dd">
+                    <input id="from_date" class="form-control" type="text" readonly />
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label>To</label>
+                <div id="to_date_div" class="input-group date" data-date-format="yyyy-mm-dd">
+                    <input id="to_date" class="form-control" type="text" readonly />
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label>Search Messages</label>
+                <input v-model="filter_message" class="form-control">
+            </div>
+            <div class="col-md-2">
+                <label>Status</label>
+                <select v-model="filter_status" v-on:change="onSetCriteria" class="form-control">
+                    <option value="0"></option>
+                    <option value="1">Open</option>
+                    <option value="2">Progress</option>
+                    <option value="3">Closed</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label>Call Type</label>
+                <select v-model="filter_type" v-on:change="onSetCriteria" class="form-control">
+                    <option value="0"></option>
+                    <option value="1">Hung up</option>
+                    <option value="2">Voice mail</option>
+                </select>
+            </div>
+        </div>
+        <div class="row paragraph">
+            <div class="col-md-12">
+                <div>
+                    <table id="vm_table" class="table-bordered">
+                        <thead>
+                            <th style="width:10%;">Wait Time</th>
+                            <th style="width:10%;">Caller Name</th>
+                            <th style="width:10%;">Caller Phone</th>
+                            <th style="width:10%;">Advisor</th>
+                            <th style="width:10%;">Status</th>
+                            <th style="width:10%;">Call Type</th>
+                            <th style="width:10%;">Ok to text?</th>
+                            <th style="width:10%;">Voice Mail</th>
+                            <th style="width:10%;">Received at</th>
+                            <th style="width:10%">Actionss</th>
+                        </thead>
+                        <tbody>
+                            <tr v-if="call_list.length==0">
+                                <td colspan="8" style="text-align:center !important;">No call</td>
+                            </tr>
+                            <tr v-for="call in call_list" v-bind:class="call.flag==1 ? 'st-flag' : call.status==2 ? 'st-progress' : call.timed_out==1 ? 'st-timeout' : call.caller_replied==6 ? 'st-caller-replied' : ''">
+                                <td>[[ call.time_since_reception ]]</td>
+                                <td>[[ call.caller_name ]]</td>
+                                <td>[[ call.caller_phone ]]</td>
+                                <td>[[ call.advisor_name ]]</td>
+                                <td v-if="call.status==0 || call.status==1">Open</td>
+                                <td v-else-if="call.status==2">Progress</td>
+                                <td v-else-if="call.status==3">Closed</td>
+                                <td v-else></td>
+                                <td v-if="call.type==1">Hung up</td>
+                                <td v-else-if="call.type==2">Voice mail</td>
+                                <td v-else></td>
+                                <td v-if="call.ok_text==1">Yes</td>
+                                <td v-else-if="call.ok_text==0">No</td>
+                                <td v-else></td>
+                                <td style="padding-left:0px;">
+                                    <div v-for="message in call.message_list" style="border-bottom:1px dashed; padding-left:5px;">[ [[ message.sender ]] ] : [[ message.message ]]</div>
+                                </td>
+                                <td>[[ call.time ]]</td>
+                                <td>
+                                    <i v-on:click="onDismiss(call.id)" class="fa fa-close"></i> &nbsp;
+                                    <i v-on:click="onFlag(call.id)" class="fa fa-flag"></i> &nbsp;
+                                    <a style="color:gray;" target="_blank" v-bind:href="'http://54.197.42.170:8000/user/voicemail/response/' + call.id + '/100'"><i class="fa fa-reply"></i></a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" style="float:right !important;">
+                    <i v-on:click="onClickPrevious();" class="fa fa-arrow-left" style="padding-top:3px; padding-right:5px;"></i>
+                    <span v-if="total_page != 0">[[ cur_page ]] / [[ total_page ]]</span>
+                    <span v-if="total_page == 0">0 / 0</span>
+                    <i v-on:click="onClickNext();" class="fa fa-arrow-right" style="padding-top:3px; padding-left:5px;"></i>
+                </div>
+            </div>
+        </div>
+		</div>
+    </section>
+
+    <script type="text/javascript">
+        var report_vue;
+        var period_list = [];
+        var period_id = 1000000;
+        var call_list = [];
+
+        // *************** Initialize Data *************** //
+        function initData() {}
+
+        // *************** Initialize Objects *************** //
+        function initObjects() {
+            var from_date = new Date();
+            var to_date = new Date();
+            from_date.setDate(from_date.getDate() - 7);
+
+            $("#from_date_div").datepicker({
+                autoclose: true,
+                todayHighlight: true
+            }).datepicker("update", from_date);
+
+            $("#to_date_div").datepicker({
+                autoclose: true,
+                todayHighlight: true
+            }).datepicker("update", to_date);
+        }
+
+        // *************** On Document Ready *************** //
+        $(document).ready(function () {
+            initData();
+
+            // --------------- report vue instance --------------- //
+            report_vue = new Vue({
+                delimiters: ['[[', ']]'],
+                el: "#report_section",
+                data: {
+                    report_name: "{{ report_name }}",
+                    filter_from_date: "",
+                    filter_to_date: "",
+                    filter_message: "",
+                    filter_status: 0,
+                    filter_type: 0,
+
+                    cur_page: 1,
+                    call_list: call_list,
+                    total_call: 0,
+                    total_page: 0,
+                },
+                methods: {
+                    // *************** Get Report Data *************** //
+                    getReportData: function(show_loading) {
+                        if (show_loading == true)
+                            showLoading();
+                        this.filter_from_date = $("#from_date").val();
+                        this.filter_to_date = $("#to_date").val();
+
+                        $.ajax({
+                            type: "POST",
+                            url: "/user/get_report4_data",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "from_date": this.filter_from_date,
+                                "to_date": this.filter_to_date,
+                                "message": this.filter_message,
+                                "status": this.filter_status,
+                                "type": this.filter_type
+                            },
+                            success: function(res) {
+                                if (show_loading == true)
+                                    hideLoading();
+                                res = JSON.parse(res);
+                                report_vue.call_list = res["call_list"];
+                                report_vue.total_page = res["total_page"];
+                                report_vue.total_call = res["total_call"];
+                                console.log(report_vue.call_list);
+                            },
+                            error: function() {
+                                if (show_loading == true)
+                                    hideLoading();
+                                showMessage(alert_list["0xF0001"]["mode"],
+                                            alert_list["0xF0001"]["title"],
+                                            alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+
+                    // *************** OnClick Dismiss *************** //
+                    onDismiss: function(id) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/user/voicemail/dismiss_voicemail",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "id": id
+                            },
+                            success: function(res) {
+                                var i;
+                                for (i = 0; i < report_vue.call_list.length; i++) {
+                                    if (report_vue.call_list[i]["id"] == id) {
+                                        report_vue.call_list.splice(i, 1);
+                                        break;
+                                    }
+                                }
+                            },
+                            error: function(res) {
+                                showMessage(alert_list["0xF0001"]["mode"],
+                                            alert_list["0xF0001"]["title"],
+                                            alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+
+                    // *************** OnClick Flag *************** //
+                    onFlag: function(id) {
+                        $.ajax({
+                            type: "POST",
+                            url: "/user/voicemail/flag_voicemail",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "id": id
+                            },
+                            success: function(res) {
+                                var i;
+                                for (i = 0; i < report_vue.call_list.length; i++) {
+                                    if (report_vue.call_list[i]["id"] == id) {
+                                        report_vue.call_list[i]["flag"] = 1 - report_vue.call_list[i]["flag"];
+                                        break;
+                                    }
+                                }
+                            },
+                            error: function(res) {
+                                showMessage(alert_list["0xF0001"]["mode"],
+                                            alert_list["0xF0001"]["title"],
+                                            alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+
+                    // *************** OnClick Set From/To Period *************** //
+                    onSetCriteria: function() {
+                        this.cur_page = 1;
+                        this.getReportData(true);
+                    },
+
+                    // *************** OnClick Previous Page *************** //
+                    onClickPrevious: function() {
+                        if (this.cur_page <= 1)
+                            return;
+                        this.cur_page--;
+                        this.getReportData(true);
+                    },
+
+                    // *************** OnClick Next Page *************** //
+                    onClickNext: function() {
+                        if (this.cur_page >= this.total_page)
+                            return;
+                        this.cur_page++;
+                        this.getReportData(true);
+                    }
+                },
+                watch: {
+                    // *************** OnUpdate Filter Message *************** //
+                    filter_message: function(cur_value, prev_value) {
+                        this.onSetCriteria();
+                    },
+                }
+            });
+
+            initObjects();
+
+            $("#from_date_div").change(function() {
+                report_vue.onSetCriteria();
+            });
+
+            $("#to_date_div").change(function() {
+                report_vue.onSetCriteria();
+            });
+
+            showLoading();
+            setTimeout(function() {
+                $("#report_section").css("display", "");
+                hideLoading();
+                report_vue.getReportData(true);
+            }, FIRST_DELAY);
+
+
+            var timer_obj = window.setInterval(function() {
+                report_vue.getReportData(false);
+            }, 1000 * 60 * 1);
+        });
+    </script>
+{% endblock %}

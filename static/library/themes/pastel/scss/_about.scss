@@ -1,0 +1,136 @@
+/* About Area css
+============================================================================================ */
+.about-area{
+	.about-content{
+		@media (min-width: 992px) and (max-width: 1199px){
+			margin-left: 20px;
+
+		}
+		@media (max-width: 991px){
+			margin-top: 50px;			
+		}
+		@media (max-width: 767px){
+			margin-top: 0;
+		}
+		h4{
+			font-size: 48px;
+			color: $dip;
+			font-family: $con;
+			margin-bottom: 43px;
+			line-height: 58px;
+			
+		}
+		p{
+			font-size: 16px;
+			font-family: $reg;
+			line-height: 1.75;
+			margin-bottom: 33px;
+			@media (min-width: 768px) and ( max-width: 991px){
+				font-size: 13px;
+				margin-bottom: 10px;
+			} 
+		}
+		span{
+			font-size: 12px;
+			font-weight: 700;
+			color: $baseColor;
+			margin-bottom: 30px;
+			display: inline-block;
+		}
+		h6{
+			font-size: 16px;
+			font-weight: 400;
+			font-family: $reg;
+			line-height:26px;
+			margin-bottom: 38px;
+		}
+		.main_btn{
+			padding: 10px 50px;
+			margin-top: 7px;
+			background: #fff;
+			border:2px solid #dfdfe1;
+			color: #262533;
+			font-size: 15px;
+			font-weight: 500;
+			&:hover{
+				background: $dip;
+				color: #fff;
+				border-color: $dip;
+			}
+		}
+
+
+	}
+}
+
+.img-styleBox {
+	padding-left: 55px;
+	margin-top: 55px;
+	position: relative;
+	@media (max-width: 767px){
+		display: none;
+	}
+	.styleBox-border{
+		position: relative;
+		margin-bottom: 100px;
+		img{
+			-webkit-box-shadow: 1px 52px 76px 5px rgba(0,0,0,0.32);
+			-moz-box-shadow: 1px 52px 76px 5px rgba(0,0,0,0.32);
+			box-shadow: 1px 52px 76px 5px rgba(0,0,0,0.32);
+		}
+		&:after{
+			content: '';
+			position: absolute;
+			width: 200px;
+			height: 200px;
+			background-image: url(../img/elements/pattern_bg_2.png);
+			left: -55px;
+			bottom: -81px;
+			z-index: -1;
+			background-size: contain;
+			background-repeat: no-repeat;
+		}
+
+		&:before{
+			content: '';
+			position: absolute;
+			width: 150px;
+			height: 150px;
+			background-image: url(../img/elements/pattern_bg_4.png);
+			left: -55px;
+			top: -40px;
+			z-index: -1;
+			background-size: cover;
+			background-repeat: no-repeat;
+		}
+
+	}
+	.styleBox-2 {
+		position: absolute;
+		bottom: -45px;
+		right: 61px;
+		width: 130px;
+		height: 130px;
+		background-image: url(../img/elements/pattern_bg_3.png);
+		text-align: center;
+		padding-top: 25px;
+		span{
+			font-family: $con;
+			color: $baseColor;
+			font-size: 48px;
+			font-weight: 700;
+		}
+		p{
+			color: #fff;
+			line-height: 20px;
+
+		}
+		@media (min-width: 992px) and (max-width: 1199px){
+			right: -5px;
+		
+		}
+	}
+}
+
+
+

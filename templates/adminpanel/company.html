@@ -1,0 +1,459 @@
+{% extends "adminpanel/base.html" %}
+{% block page_content %}
+{% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.min.css" />
+    <section id="main_section" class="page-content area-padding-bottom" style="min-height:600px; display:none;">
+		<div class="phonenuber_sec">
+	 <span style="line-height:2.3; color:var(--caravan-dark-gray);">Tel: +1 xx xxx xx xx  |  <a href="mailto:support@autoservice.ai" style="color:var(--caravan-dark-gray)">support@autoservice.ai</a></span>
+	</div>
+        <div class="container-fluid">
+
+            <div class="topbackground" id="company_tbl" style="margin-top:20px;">
+                <div style="width:98%; margin-left:1%;">
+                    <div class="row">
+                        <div class="col-8 col-md-3">
+                            <input v-model="filter_str" type="text" class="form-control" style="border-color:#bbb" placeholder="Filter ...">
+                        </div>
+                        <div class="col-4 col-md-9">
+                            <button v-on:click="onRegister" class="btn btn-success Register" style="float:right; margin-right:1%; font-size:14px; margin-bottom:10px;"
+                                data-target="#companyRegisterModal" data-toggle="modal">Register <i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="tblWrap">
+                        <table class="table-bordered my-table">
+                            <thead>
+                                <th style="width:20%;">Name</th>
+                                <th style="width:15%;">Group</th>
+                                <th style="width:20%;">Twilio </br> Account Sid</th>
+                                <th style="width:20%;">Twilio Auth Token</th>
+                                <th style="width:20%;">Twilio Phone Number</th>
+                                <th style="width:20%;">customer</br> Info API</th>
+                                <th style="width:20%;">fallback Forward To</th>
+                                <th style="width:20%;">unregistered Forward To</th>
+                                <th style="width:20%;">unregistered Email To</th>
+                                <th style="width:20%;">unregistered Sms To</th>
+                                <th style="width:20%;">unregistered API Call</th>
+                                <th style="width:10%;"></th>
+                            </thead>
+                            <tbody>
+                                <tr v-if="total_page == 0">
+                                    <td colspan="5">
+                                        No data
+                                    </td>
+                                </tr>
+                                <tr v-else v-for="company in company_list">
+                                    <td>[[ company.name ]]</td>
+                                    <td>[[ company.group ]]</td>
+                                    <td>[[ company.twilio_account_sid ]]</td>
+                                    <td>[[ company.twilio_auth_token ]]</td>
+                                    <td>[[ company.twilio_phone_number ]]</td>
+                                    <td>[[ company.customerInfoAPI ]]</td>
+                                    <td>[[ company.fallbackForwardTo ]]</td>
+                                    <td>[[ company.unregisteredForwardTo ]]</td>
+                                    <td>[[ company.unregisteredEmailTo ]]</td>
+                                    <td>[[ company.unregisteredSmsTo ]]</td>
+                                    <td>[[  company.unregisteredAPICall ]]</td>
+
+                                    <td>
+                                        <i @click="onUpdate(company.id)" class="fa fa-edit" data-target="#companyRegisterModal" data-toggle="modal"></i>
+                                        <i @click="onDelete(company.id)" class="fa fa-trash"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" style="float:right !important;">
+                        <i v-on:click="onClickPrevious();" class="fa fa-arrow-left" style="padding-top:3px; padding-right:5px;"></i>
+                        <span v-if="total_page != 0">[[ cur_page ]] / [[ total_page ]]</span>
+                        <span v-if="total_page == 0">0 / 0</span>
+                        <i v-on:click="onClickNext();" class="fa fa-arrow-right" style="padding-top:3px; padding-left:5px;"></i>
+                    </div>
+                </div>
+
+                <div id="companyRegisterModal" class="modal modal-adminpro-general default-popup-PrimaryModal fade" role="dialog" style="color:#54595f;">
+                    <div class="modal-dialog" style="width:100%; max-width:800px; font-size:16px;">
+                        <div class="modal-content">
+                            <div class="modal-header header-color-modal star-back-color" style="height:50px; color:white;">
+                                <h2 v-if="r_u_flag==1" class="modal-title Registertitle">Register Company..</h2>
+                                <h2 v-if="r_u_flag==2" class="modal-title Registertitle">Update Company</h2>
+                                <div class="modal-close-area modal-close-df">
+                                    <a class="close star-back-color" data-dismiss="modal" href="#" style="color:#54595f; margin-top:-20px;"><i class="fa fa-close"></i></a>
+                                </div>
+                            </div>
+                            <div style="margin-top:15px;">
+                                <section class="content" style="width:96%; margin-left:2%;">
+                                    <div class="row">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                                            <label class="font-size14 margin_b">Name (*)</label>
+                                            <input v-model="reg_name" class="form-control" :readonly="r_u_flag==2">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                                            <label class="font-size14 margin_b">Group (*)</label>
+                                            <input v-model="reg_group" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px;">
+                                        <div class="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">Twilio Account Sid (*)</label>
+                                            <input v-model="reg_twilio_account_sid" class="form-control">
+                                        </div>
+                                        <div class="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">Twilio Auth Token (*)</label>
+                                            <input v-model="reg_twilio_auth_token" class="form-control">
+                                        </div>
+                                        <div class="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">Twilio Phone Number (*)</label>
+                                            <input v-model="reg_twilio_phone_number" class="form-control">
+                                        </div>
+                                         <div class="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                           <label class="font-size14 margin_b">customer Info API </label>
+                                              <input v-model="customerInfoAPI" class="form-control">
+                                        </div>
+                                        <div class="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">fallbackForwardTo (*)</label>
+                                              <input v-model="fallbackForwardTo" class="form-control">
+                                        </div>
+                                         <div class="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                           <label class="font-size14 margin_b">unregisteredForwardTo (*)</label>
+                                              <input v-model="unregisteredForwardTo" class="form-control">
+                                        </div>
+                                        <div class="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">unregisteredEmailTo (*)</label>
+                                              <input v-model="unregisteredEmailTo" class="form-control">
+                                        </div>
+                                        <div class="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">unregisteredSmsTo (*)</label>
+                                              <input v-model="unregisteredSmsTo" class="form-control">
+                                        </div>
+                                          <div class="col-4 col-sm-4 col-md-4 col-lg-4 col-xl-4">
+                                           <label class="font-size14 margin_b">unregisteredAPICall </label>
+                                              <input v-model="unregisteredAPICall" class="form-control">
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                            <div class="modal-footer">
+                                <button v-on:click="onRegisterCompany()" id="confirm_register" class="btn btn-success">Confirm</button>
+                                <button id="btn_close" class="btn btn-success" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+    <script type="text/javascript">
+        var companytbl_vue;        // usertbl vue instance
+        var company_list = new Array();
+
+        // *************** Init Data *************** //
+        function initData() {
+            {% for company in company_list %}
+                company_list.push({
+                    "id": {{ company.id }},
+                    "name": "{{ company.name }}",
+                    "group": "{{ company.group }}",
+                    "twilio_account_sid": "{{ company.twilio_account_sid }}",
+                    "twilio_auth_token": "{{ company.twilio_auth_token }}",
+                    "twilio_phone_number": "{{ company.twilio_phone_number }}",
+                    "customerInfoAPI": "{{ company.customerInfoAPI }}",
+                    "fallbackForwardTo": "{{ company.fallbackForwardTo  }}",
+                    "unregisteredForwardTo": "{{ company.unregisteredForwardTo }}",
+                    "unregisteredEmailTo": "{{ company.unregisteredEmailTo }}",
+                    "unregisteredSmsTo": "{{ company.unregisteredSmsTo }}",
+                    "unregisteredAPICall": "{{ company.unregisteredAPICall }}",
+                });
+            {% endfor %}
+        }
+
+        // *************** Document Ready *************** //
+        $(document).ready(function() {
+            initData();
+
+            showLoading();
+            setTimeout(function() {
+                $("#main_section").css("display", "");
+                hideLoading();
+            }, FIRST_DELAY);
+
+            // *************** Company Table Vue Instance *************** //
+            companytbl_vue = new Vue({
+                delimiters: ['[[', ']]'],
+                el : "#company_tbl",
+                data: {
+                    r_u_flag: 1,
+                    cur_page: 1,
+                    total_company: {{ total_company }},
+                    total_page: {{ total_page }},
+                    company_list: company_list,
+                    filter_str: "",
+
+                    reg_name: "",
+                    reg_group: "",
+                    reg_twilio_account_sid: "",
+                    reg_twilio_auth_token: "",
+                    reg_twilio_phone_number: "",
+                    customerInfoAPI: "",
+                    fallbackForwardTo: "",
+                    unregisteredForwardTo: "",
+                    unregisteredEmailTo: "",
+                    unregisteredSmsTo: "",
+                    unregisteredAPICall: "",
+                },
+                methods: {
+                    // *************** OnClick Register Company *************** //
+                    onRegister: function() {
+                        this.r_u_flag = 1;
+                        this.reg_name = this.reg_twilio_account_sid = "";
+                        this.reg_twilio_auth_token = this.reg_twilio_phone_number = "";
+                    },
+
+                    // *************** OnClick Update Company *************** //
+                    onUpdate: function(id) {
+                        var i;
+                        var idx;
+                        this.r_u_flag = 2;
+
+                        for (i = 0; i < this.company_list.length; i++) {
+                            var company = this.company_list[i];
+                            if (company["id"] == id) {
+                                this.reg_name = company["name"];
+                                this.reg_group = company["group"];
+                                this.reg_twilio_account_sid = company["twilio_account_sid"];
+                                this.reg_twilio_auth_token = company["twilio_auth_token"];
+                                this.reg_twilio_phone_number = company["twilio_phone_number"];
+                                this.customerInfoAPI = company["customerInfoAPI"];
+                                this.fallbackForwardTo = company["fallbackForwardTo"];
+                                this.unregisteredForwardTo = company["unregisteredForwardTo"];
+                                this.unregisteredEmailTo = company["unregisteredEmailTo"];
+                                this.unregisteredSmsTo = company["unregisteredSmsTo"];
+                                this.unregisteredAPICall = company["unregisteredAPICall"];
+                                break;
+                            }
+                        }
+                    },
+
+                    // *************** OnClick Delete Company *************** //
+                    onDelete: function(id) {
+                        if (!confirm("Do you want to delete this company?")) return;
+                        $.ajax({
+                            type: "POST",
+                            url: "/admin/delete_company",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "id": id
+                            },
+                            async: false,
+                            success: function(res) {
+                                for (var i = 0; i < companytbl_vue.company_list.length; i++) {
+                                    if (companytbl_vue.company_list[i]["id"] == id) {
+                                        companytbl_vue.company_list.splice(i, 1);
+                                        companytbl_vue.total_company--;
+                                        companytbl_vue.total_page = Math.ceil(companytbl_vue.total_company / 15);
+                                    }
+                                }
+                                showMessage(alert_list["0x10011"]["mode"],
+                                            alert_list["0x10011"]["title"],
+                                            alert_list["0x10011"]["msg"], 5000);
+                            },
+                            error: function(res) {
+                                showMessage(alert_list["0xF0001"]["mode"],
+                                            alert_list["0xF0001"]["title"],
+                                            alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+
+                    // *************** OnConfirm Register Company *************** //
+                    onRegisterCompany: function() {
+                        var param = {};
+                        if (this.reg_name == "" || this.reg_group == "" || this.reg_twilio_account_sid == ""
+                            || this.reg_twilio_auth_token == "" || this.reg_twilio_phone_number == "" || this.fallbackForwardTo == "" || this.unregisteredForwardTo == "" || this.unregisteredEmailTo == "" || this.unregisteredSmsTo == "" ){
+
+                            showMessage(alert_list["0x10001"]["mode"],
+                                        alert_list["0x10001"]["title"],
+                                        alert_list["0x10001"]["msg"], 5000);
+                            return;
+                        }
+                        if (this.reg_twilio_phone_number[0] != "+") {
+                            showMessage(alert_list["0x10018"]["mode"],
+                                        alert_list["0x10018"]["title"],
+                                        alert_list["0x10018"]["msg"], 5000);
+                            return;
+                        }
+                        param = {
+                            name: this.reg_name,
+                            group: this.reg_group,
+                            twilio_account_sid: this.reg_twilio_account_sid,
+                            twilio_auth_token: this.reg_twilio_auth_token,
+                            twilio_phone_number: this.reg_twilio_phone_number,
+                            customerInfoAPI: this.customerInfoAPI,
+                            fallbackForwardTo: this.fallbackForwardTo,
+                            unregisteredForwardTo: this.unregisteredForwardTo,
+                            unregisteredEmailTo:this.unregisteredEmailTo,
+                            unregisteredSmsTo:this.unregisteredSmsTo,
+                            unregisteredAPICall:this.unregisteredAPICall,
+                        };
+
+                        // ---------- register case ---------- //
+                        if (this.r_u_flag == 1) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/admin/register_company",
+                                beforeSend: function( xhr ) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                                },
+                                data: {
+                                    "param": JSON.stringify(param)
+                                },
+                                async: false,
+                                success: function(res) {
+                                    var tmp_ary = new Array();
+                                    var i;
+
+                                    for (i = 0; i < companytbl_vue.company_list.length; i++)
+                                        tmp_ary.push(companytbl_vue.company_list[i]);
+
+                                    companytbl_vue.company_list = new Array();
+                                    companytbl_vue.company_list.push({
+                                        "id": res,
+                                        "name": companytbl_vue.reg_name,
+                                        "group": companytbl_vue.reg_group,
+                                        "twilio_account_sid": companytbl_vue.reg_twilio_account_sid,
+                                        "twilio_auth_token": companytbl_vue.reg_twilio_auth_token,
+                                        "twilio_phone_number": companytbl_vue.reg_twilio_phone_number,
+                                        "customerInfoAPI": companytbl_vue.customerInfoAPI,
+                                        "fallbackForwardTo": companytbl_vue.fallbackForwardTo,
+                                        "unregisteredForwardTo": companytbl_vue.unregisteredForwardTo,
+                                        "unregisteredEmailTo": companytbl_vue.unregisteredEmailTo,
+                                        "unregisteredSmsTo": companytbl_vue.unregisteredSmsTo,
+                                        "unregisteredAPICall": companytbl_vue.unregisteredAPICall,
+                                    });
+
+                                    for (i = 0; i < Math.min(tmp_ary.length, 14); i++)
+                                        companytbl_vue.company_list[i+1] = tmp_ary[i];
+
+                                    companytbl_vue.total_company++;
+                                    companytbl_vue.total_page = Math.ceil(companytbl_vue.total_company / 15);
+
+                                    showMessage(alert_list["0x1000E"]["mode"],
+                                                alert_list["0x1000E"]["title"],
+                                                alert_list["0x1000E"]["msg"], 5000);
+
+                                    $("#btn_close").trigger("click");
+                                },
+                                error: function(res) {
+                                    if (res["responseText"] == "existing_name") {
+                                        showMessage(alert_list["0x1000F"]["mode"],
+                                                    alert_list["0x1000F"]["title"],
+                                                    alert_list["0x1000F"]["msg"], 5000);
+                                    } else if (res["responseText"] == "error") {
+                                        showMessage(alert_list["0xF0001"]["mode"],
+                                                    alert_list["0xF0001"]["title"],
+                                                    alert_list["0xF0001"]["msg"], 5000);
+                                    }
+                                }
+                            });
+                        }
+                        // ---------- update case ---------- //
+                        else if (this.r_u_flag == 2) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/admin/update_company",
+                                beforeSend: function( xhr ) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                                },
+                                data: {
+                                    "param": JSON.stringify(param)
+                                },
+                                async: false,
+                                success: function(res) {
+                                    var i;
+                                    for (i = 0; i < companytbl_vue.company_list.length; i++) {
+                                        var company = companytbl_vue.company_list[i];
+                                        if (company["name"] == companytbl_vue.reg_name) {
+                                            companytbl_vue.company_list[i]["group"] = companytbl_vue.reg_group;
+                                            companytbl_vue.company_list[i]["twilio_account_sid"] = companytbl_vue.reg_twilio_account_sid;
+                                            companytbl_vue.company_list[i]["twilio_auth_token"] = companytbl_vue.reg_twilio_auth_token;
+                                            companytbl_vue.company_list[i]["twilio_phone_number"] = companytbl_vue.reg_twilio_phone_number;
+                                            companytbl_vue.company_list[i]["customerInfoAPI"] = companytbl_vue.customerInfoAPI;
+                                            companytbl_vue.company_list[i]["fallbackForwardTo"] = companytbl_vue.fallbackForwardTo;
+                                            companytbl_vue.company_list[i]["unregisteredForwardTo"] = companytbl_vue.unregisteredForwardTo;
+                                            companytbl_vue.company_list[i]["unregisteredEmailTo"] = companytbl_vue.unregisteredEmailTo;
+                                            companytbl_vue.company_list[i]["unregisteredSmsTo"] = companytbl_vue.unregisteredSmsTo;
+                                            companytbl_vue.company_list[i]["unregisteredAPICall"] = companytbl_vue.unregisteredAPICall;
+                                        }
+                                    }
+                                    showMessage(alert_list["0x10010"]["mode"],
+                                                alert_list["0x10010"]["title"],
+                                                alert_list["0x10010"]["msg"], 5000);
+
+                                    $("#btn_close").trigger("click");
+                                },
+                                error: function(res) {
+                                    showMessage(alert_list["0xF0001"]["mode"],
+                                                alert_list["0xF0001"]["title"],
+                                                alert_list["0xF0001"]["msg"], 5000);
+                                }
+                            });
+                        }
+                    },
+
+                    // *************** Get Page Companies *************** //
+                    getPageCompany: function() {
+                        $.ajax({
+                            type: "POST",
+                            url: "/admin/get_page_company",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "filter_str": this.filter_str,
+                                "cur_page": this.cur_page
+                            },
+                            async: false,
+                            success: function(res) {
+                                res = JSON.parse(res);
+                                companytbl_vue.total_page = res["total_page"];
+                                res = res["company_list"];
+                                companytbl_vue.company_list = new Array();
+                                for (var i = 0; i < res.length; i++) {
+                                    companytbl_vue.company_list.push(res[i]);
+                                }
+                            }
+                        });
+                    },
+
+                    // *************** OnClick Previous Page *************** //
+                    onClickPrevious: function() {
+                        if (this.cur_page <= 1)
+                            return;
+                        this.cur_page--;
+                        this.getPageCompany();
+                    },
+
+                    // *************** OnClick Next Page *************** //
+                    onClickNext: function() {
+                        if (this.cur_page >= this.total_page)
+                            return;
+                        this.cur_page++;
+                        this.getPageCompany();
+                    }
+                },
+                watch: {
+                    // *************** OnUpdate Filter String *************** //
+                    filter_str: function() {
+                        this.cur_page = 1;
+                        this.getPageCompany();
+                    }
+                }
+            });
+        });
+
+    </script>
+{% endblock %}

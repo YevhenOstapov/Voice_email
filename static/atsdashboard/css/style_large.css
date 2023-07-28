@@ -1,0 +1,51 @@
+.font-00001 {
+    font-size: 38px;
+    color: #54595f;
+    text-align: center;
+}
+
+.font-00001-bold {
+    font-size: 38px;
+    color: #54595f;
+    text-align: center;
+    font-weight: bold;
+}
+
+.font-00002 {
+    font-size: 34px;
+    color: #54595f;
+    text-align: center;
+}
+
+.font-00002-bold {
+    font-size: 34px;
+    color: #54595f;
+    text-align: center;
+    font-weight: bold;
+}
+
+.font-00003 {
+    font-size: 30px;
+    color: #54595f;
+    text-align: center;
+}
+
+.font-00003-bold {
+    font-size: 30px;
+    color: #54595f;
+    text-align: center;
+    font-weight: bold;
+}
+
+.font-00004 {
+    font-size: 26px;
+    color: #54595f;
+    text-align: center;
+}
+
+.font-00004-bold {
+    font-size: 26px;
+    color: #54595f;
+    text-align: center;
+    font-weight: bold;
+}

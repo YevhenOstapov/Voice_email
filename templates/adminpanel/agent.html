@@ -1,0 +1,423 @@
+{% extends "adminpanel/base.html" %}
+{% block page_content %}
+{% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.min.css" />
+    <section id="main_section" class="page-content area-padding-bottom" style="min-height:600px; display:none;">
+		<div class="phonenuber_sec">
+	 <span style="line-height:2.3; color:var(--caravan-dark-gray);">Tel: +1 xx xxx xx xx  |  <a href="mailto:support@autoservice.ai" style="color:var(--caravan-dark-gray)">support@autoservice.ai</a></span>
+	</div>
+        <div class="container-fluid" style="max-width:1240px;">
+            <div class="topbackground" id="agent_tbl" style="margin-top:20px;">
+                <div style="width:98%; margin-left:1%;">
+                    <div class="row">
+                        <div class="col-8 col-md-3">
+                            <input v-model="filter_str" type="text" class="form-control" style="border-color:#bbb" placeholder="Filter ...">
+                        </div>
+                        <div class="col-4 col-md-9">
+                            <button v-on:click="onRegister" class="btn btn-success Register" style="float:right; margin-right:1%; font-size:14px; margin-bottom:10px;"
+                                data-target="#agentRegisterModal" data-toggle="modal">Register <i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="tblWrap">
+                        <table class="table-bordered my-table">
+                            <thead>
+                                <th style="width:15%;">Name</th>
+                                <th style="width:10%;">Code</th>
+                                <th style="width:10%;">Type</th>
+                                <th style="width:15%;">OpenWeeklyFrom</th>
+                                <th style="width:15%;">OpenWeeklyTo</th>
+                                <th style="width:15%;">OpenSatFrom</th>
+                                <th style="width:15%;">OpenSatTo</th>
+                                <th style="width:5%;"></th>
+                            </thead>
+                            <tbody>
+                                <tr v-if="total_page == 0">
+                                    <td colspan="8">
+                                        No data
+                                    </td>
+                                </tr>
+                                <tr v-else v-for="agent in agent_list">
+                                    <td>[[ agent.name ]]</td>
+                                    <td>[[ agent.code ]]</td>
+                                    <td v-if="agent.type==1">Inbound</td>
+                                    <td v-else-if="agent.type==2">Marketing</td>
+                                    <td v-else-if="agent.type==3">Voicemail</td>
+                                    <td>[[ agent.open_weekly_from ]]</td>
+                                    <td>[[ agent.open_weekly_to ]]</td>
+                                    <td>[[ agent.open_sat_from ]]</td>
+                                    <td>[[ agent.open_sat_to ]]</td>
+                                    <td>
+                                        <i @click="onUpdate(agent.id)" class="fa fa-edit" data-target="#agentRegisterModal" data-toggle="modal"></i>
+                                        <i @click="onDelete(agent.id)" class="fa fa-trash"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" style="float:right !important;">
+                        <i v-on:click="onClickPrevious();" class="fa fa-arrow-left" style="padding-top:3px; padding-right:5px;"></i>
+                        <span v-if="total_page != 0">[[ cur_page ]] / [[ total_page ]]</span>
+                        <span v-if="total_page == 0">0 / 0</span>
+                        <i v-on:click="onClickNext();" class="fa fa-arrow-right" style="padding-top:3px; padding-left:5px;"></i>
+                    </div>
+                </div>
+
+                <div id="agentRegisterModal" class="modal modal-adminpro-general default-popup-PrimaryModal fade" role="dialog" style="color:#54595f;">
+                    <div class="modal-dialog" style="width:100%; max-width:800px; font-size:16px;">
+                        <div class="modal-content">
+                            <div class="modal-header header-color-modal star-back-color" style="height:50px; color:white;">
+                                <h2 v-if="r_u_flag==1" class="modal-title Registertitle">Register Agent</h2>
+                                <h2 v-if="r_u_flag==2" class="modal-title Registertitle">Update Agent</h2>
+                                <div class="modal-close-area modal-close-df">
+                                    <a class="close star-back-color" data-dismiss="modal" href="#" style="color:#54595f; margin-top:-20px;"><i class="fa fa-close"></i></a>
+                                </div>
+                            </div>
+                            <div style="margin-top:15px;">
+                                <section class="content" style="width:96%; margin-left:2%;">
+                                    <div class="row">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                                           <label class="font-size14 margin_b">Name (*)</label>
+                                            <input v-model="reg_name" class="form-control" :readonly="r_u_flag==2">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                                            <label class="font-size14 margin_b">Code (*)</label>
+                                            <input v-model="reg_code" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                                            <label class="font-size14 margin_b">Type (*)</label>
+                                            <select v-model="reg_type" class="form-control">
+                                                <option value="1">Inbound</option>
+                                                <option value="2">Marketing</option>
+                                                <option value="3">Voicemail</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:10px;">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                                            <label class="font-size14 margin_b">OpenWeeklyFrom</label>
+                                            <input v-model="reg_open_weekly_from" id="reg_open_weekly_from" type="text" class="form-control datetimepicker" />
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-6">
+                                            <label class="font-size14 margin_b">OpenWeeklyTo (*)</label>
+                                            <input v-model="reg_open_weekly_to" id="reg_open_weekly_to" type="text" class="form-control datetimepicker" />
+                                        </div>
+                                    </div>
+                                    <div class="row" style="margin-top:15px">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                                            <label class="font-size14 margin_b">OpenSatFrom (*)</label>
+                                            <input v-model="reg_open_sat_from" id="reg_open_sat_from" type="text" class="form-control datetimepicker" />
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                                            <label class="font-size14 margin_b">OpenSatTo (*)</label>
+                                            <input v-model="reg_open_sat_to" id="reg_open_sat_to" type="text" class="form-control datetimepicker" />
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                            <div class="modal-footer">
+                                <button v-on:click="onRegisterAgent()" id="confirm_register" class="btn btn-success">Confirm</button>
+                                <button id="btn_close" class="btn btn-success" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+    <script type="text/javascript">
+        var agenttbl_vue;        // usertbl vue instance
+        var agent_list = new Array();
+        var tp_openweeklyfrom;
+
+        // *************** Init Data *************** //
+        function initData() {
+            {% for agent in agent_list %}
+                agent_list.push({
+                    "id": {{ agent.id }},
+                    "name": "{{ agent.name }}",
+                    "code": "{{ agent.code }}",
+                    "type": {{ agent.type }},
+                    "open_weekly_from": "{{ agent.open_weekly_from }}",
+                    "open_weekly_to": "{{ agent.open_weekly_to }}",
+                    "open_sat_from": "{{ agent.open_sat_from }}",
+                    "open_sat_to": "{{ agent.open_sat_to }}"
+                });
+            {% endfor %}
+        }
+
+        // *************** Document Ready *************** //
+        $(document).ready(function() {
+            initData();
+
+            showLoading();
+            setTimeout(function() {
+                $("#main_section").css("display", "");
+                hideLoading();
+            }, FIRST_DELAY);
+
+            // *************** Agent Table Vue Instance *************** //
+            agenttbl_vue = new Vue({
+                delimiters: ['[[', ']]'],
+                el : "#agent_tbl",
+                data: {
+                    r_u_flag: 1,
+                    cur_page: 1,
+                    total_agent: {{ total_agent }},
+                    total_page: {{ total_page }},
+                    agent_list: agent_list,
+                    filter_str: "",
+
+                    reg_name: "",
+                    reg_code: "",
+                    reg_type: "",
+                    reg_open_weekly_from: "",
+                    reg_open_weekly_to: "",
+                    reg_open_sat_from: "",
+                    reg_open_sat_to: ""
+                },
+                methods: {
+                    // *************** OnClick Register Agent *************** //
+                    onRegister: function() {
+                        this.r_u_flag = 1;
+                        this.reg_name = this.reg_code = this.reg_type = "";
+                        this.reg_open_weekly_from = this.reg_open_sat_from = "9:00 AM";
+                        this.reg_open_weekly_to = this.reg_open_sat_to = "5:30 PM";
+                    },
+
+                    // *************** OnClick Update Agent *************** //
+                    onUpdate: function(id) {
+                        var i;
+                        var idx;
+                        this.r_u_flag = 2;
+
+                        for (i = 0; i < this.agent_list.length; i++) {
+                            var agent = this.agent_list[i];
+                            if (agent["id"] == id) {
+                                this.reg_name = agent["name"];
+                                this.reg_code = agent["code"];
+                                this.reg_type = agent["type"];
+                                this.reg_open_weekly_from = agent["open_weekly_from"];
+                                this.reg_open_weekly_to = agent["open_weekly_to"];
+                                this.reg_open_sat_from = agent["open_sat_from"];
+                                this.reg_open_sat_to = agent["open_sat_to"];
+                                break;
+                            }
+                        }
+                    },
+
+                    // *************** OnClick Delete Agent *************** //
+                    onDelete: function(id) {
+                        if (!confirm("Do you want to delete this agent?")) return;
+                        $.ajax({
+                            type: "POST",
+                            url: "/admin/delete_agent",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "id": id
+                            },
+                            async: false,
+                            success: function(res) {
+                                for (var i = 0; i < agenttbl_vue.agent_list.length; i++) {
+                                    if (agenttbl_vue.agent_list[i]["id"] == id) {
+                                        agenttbl_vue.agent_list.splice(i, 1);
+                                        agenttbl_vue.total_agent--;
+                                        agenttbl_vue.total_page = Math.ceil(agenttbl_vue.total_agent / 15);
+                                    }
+                                }
+                                showMessage(alert_list["0x10009"]["mode"],
+                                            alert_list["0x10009"]["title"],
+                                            alert_list["0x10009"]["msg"], 5000);
+                            },
+                            error: function(res) {
+                                showMessage(alert_list["0xF0001"]["mode"],
+                                            alert_list["0xF0001"]["title"],
+                                            alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+
+                    // *************** OnConfirm Register Agent *************** //
+                    onRegisterAgent: function() {
+                        this.reg_open_weekly_from = $("#reg_open_weekly_from").val();
+                        this.reg_open_weekly_to = $("#reg_open_weekly_to").val();
+                        this.reg_open_sat_from = $("#reg_open_sat_from").val();
+                        this.reg_open_sat_to = $("#reg_open_sat_to").val();
+
+                        var param = {};
+                        if (this.reg_name === "" || this.reg_code === "" || this.reg_type === "" ||
+                            this.reg_open_weekly_from === "" || this.reg_open_weekly_to === "" || this.reg_open_sat_from === "" || this.reg_open_sat_to === "") {
+                            showMessage(alert_list["0x10001"]["mode"],
+                                        alert_list["0x10001"]["title"],
+                                        alert_list["0x10001"]["msg"], 5000);
+                            return;
+                        }
+                        param = {
+                            name: this.reg_name,
+                            code: this.reg_code,
+                            type: parseInt(this.reg_type),
+                            open_weekly_from: this.reg_open_weekly_from,
+                            open_weekly_to: this.reg_open_weekly_to,
+                            open_sat_from: this.reg_open_sat_from,
+                            open_sat_to: this.reg_open_sat_to
+                        };
+
+                        // ---------- register case ---------- //
+                        if (this.r_u_flag == 1) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/admin/register_agent",
+                                beforeSend: function( xhr ) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                                },
+                                data: {
+                                    "param": JSON.stringify(param)
+                                },
+                                async: false,
+                                success: function(res) {
+                                    var tmp_ary = new Array();
+                                    var i;
+
+                                    for (i = 0; i < agenttbl_vue.agent_list.length; i++)
+                                        tmp_ary.push(agenttbl_vue.agent_list[i]);
+
+                                    agenttbl_vue.agent_list = new Array();
+                                    agenttbl_vue.agent_list.push({
+                                        "id": res,
+                                        "name": agenttbl_vue.reg_name,
+                                        "code": agenttbl_vue.reg_code,
+                                        "type": agenttbl_vue.reg_type,
+                                        "open_weekly_from": agenttbl_vue.reg_open_weekly_from,
+                                        "open_weekly_to": agenttbl_vue.reg_open_weekly_to,
+                                        "open_sat_from": agenttbl_vue.reg_open_sat_from,
+                                        "open_sat_to": agenttbl_vue.reg_open_sat_to
+                                    });
+
+                                    for (i = 0; i < Math.min(tmp_ary.length, 14); i++)
+                                        agenttbl_vue.agent_list[i+1] = tmp_ary[i];
+
+                                    agenttbl_vue.total_agent++;
+                                    agenttbl_vue.total_page = Math.ceil(agenttbl_vue.total_agent / 15);
+
+                                    showMessage(alert_list["0x10006"]["mode"],
+                                                alert_list["0x10006"]["title"],
+                                                alert_list["0x10006"]["msg"], 5000);
+
+                                    $("#btn_close").trigger("click");
+                                },
+                                error: function(res) {
+                                    if (res["responseText"] == "existing_name") {
+                                        showMessage(alert_list["0x10007"]["mode"],
+                                                    alert_list["0x10007"]["title"],
+                                                    alert_list["0x10007"]["msg"], 5000);
+                                    } else if (res["responseText"] == "error") {
+                                        showMessage(alert_list["0xF0001"]["mode"],
+                                                    alert_list["0xF0001"]["title"],
+                                                    alert_list["0xF0001"]["msg"], 5000);
+                                    }
+                                }
+                            });
+                        }
+                        // ---------- update case ---------- //
+                        else if (this.r_u_flag == 2) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/admin/update_agent",
+                                beforeSend: function( xhr ) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                                },
+                                data: {
+                                    "param": JSON.stringify(param)
+                                },
+                                async: false,
+                                success: function(res) {
+                                    var i;
+                                    for (i = 0; i < agenttbl_vue.agent_list.length; i++) {
+                                        var agent = agenttbl_vue.agent_list[i];
+                                        if (agent["code"] == agenttbl_vue.reg_code) {
+                                            agenttbl_vue.agent_list[i]["name"] = agenttbl_vue.reg_name;
+                                            agenttbl_vue.agent_list[i]["type"] = agenttbl_vue.reg_type;
+                                            agenttbl_vue.agent_list[i]["open_weekly_from"] = agenttbl_vue.reg_open_weekly_from;
+                                            agenttbl_vue.agent_list[i]["open_weekly_to"] = agenttbl_vue.reg_open_weekly_to;
+                                            agenttbl_vue.agent_list[i]["open_sat_from"] = agenttbl_vue.reg_open_sat_from;
+                                            agenttbl_vue.agent_list[i]["open_sat_to"] = agenttbl_vue.reg_open_sat_to;
+                                        }
+                                    }
+                                    showMessage(alert_list["0x10008"]["mode"],
+                                                alert_list["0x10008"]["title"],
+                                                alert_list["0x10008"]["msg"], 5000);
+
+                                    $("#btn_close").trigger("click");
+                                },
+                                error: function(res) {
+                                    showMessage(alert_list["0xF0001"]["mode"],
+                                                alert_list["0xF0001"]["title"],
+                                                alert_list["0xF0001"]["msg"], 5000);
+                                }
+                            });
+                        }
+                    },
+
+                    // *************** Get Page Agents *************** //
+                    getPageAgents: function() {
+                        $.ajax({
+                            type: "POST",
+                            url: "/admin/get_page_agents",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "filter_str": this.filter_str,
+                                "cur_page": this.cur_page
+                            },
+                            async: false,
+                            success: function(res) {
+                                res = JSON.parse(res);
+                                agenttbl_vue.total_page = res["total_page"];
+                                res = res["agent_list"];
+                                agenttbl_vue.agent_list = new Array();
+                                for (var i = 0; i < res.length; i++) {
+                                    agenttbl_vue.agent_list.push(res[i]);
+                                }
+                            }
+                        });
+                    },
+
+                    // *************** OnClick Previous Page *************** //
+                    onClickPrevious: function() {
+                        if (this.cur_page <= 1)
+                            return;
+                        this.cur_page--;
+                        this.getPageAgents();
+                    },
+
+                    // *************** OnClick Next Page *************** //
+                    onClickNext: function() {
+                        if (this.cur_page >= this.total_page)
+                            return;
+                        this.cur_page++;
+                        this.getPageAgents();
+                    }
+                },
+                watch: {
+                    // *************** OnUpdate Filter String *************** //
+                    filter_str: function() {
+                        this.cur_page = 1;
+                        this.getPageAgents();
+                    }
+                }
+            });
+
+            $('.datetimepicker').datetimepicker({
+                format: 'LT'
+            });
+        });
+
+    </script>
+{% endblock %}

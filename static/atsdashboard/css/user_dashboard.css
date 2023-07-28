@@ -1,0 +1,71 @@
+#updateIccidModal .modal-dialog {
+    width: 100%;
+    max-width: 1500px;
+    min-width: 1500px;
+    font-size:16px;
+}
+
+#updateIccidModal .modal-header {
+    height: 50px;
+    color: white;
+}
+
+#updateIccidModal .modal-title {
+    font-size: 27px;
+    color: #54595f;
+}
+
+#updateIccidModal .iccid-status {
+    float: right;
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+#updateIccidModal .close {
+    color:#54595f;
+    margin-top:-40px;
+}
+
+#iccid_table {
+    font-size:17px;
+    margin-top:15px;
+    width:100%;
+}
+#iccid_table tbody tr {
+    height: 50px;
+}
+#iccid_table thead {
+    background-color:var(--main-color);
+    color:white;
+    height:30px;
+}
+table {
+    table-layout: fixed;
+}
+table thead th {
+    text-align:center;
+}
+table tbody td {
+    vertical-align:middle !important;
+    word-wrap:break-word;
+}
+table tbody td {
+    vertical-align:middle !important;
+    word-break: break-word;
+}
+input, select {
+    border: 1px solid #c1baba !important;
+}
+.tooltip-inner {
+    width: 450px !important;
+    min-width: 450px !important;
+    background-color: var(--main-color);
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+.tooltip .tooltip-arrow {
+    border-top: 5px solid var(--main-color) !important;
+}
+
+#datepicker{width:180px;}
+#datepicker > span:hover{cursor: pointer;}

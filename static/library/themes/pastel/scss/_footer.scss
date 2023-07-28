@@ -1,0 +1,157 @@
+//--------- start footer Area -------------//
+.footer-area {
+	// background: url(../img/footer-bg.png) no-repeat center;
+	background: $dip;
+	position: relative;
+	padding-top: 300px;
+	margin-top: 135px;
+	.single-footer-widget {
+		@media (max-width: 991px) {
+			margin-bottom: 30px;
+		}
+
+		p{
+			color: #7b838a;
+		}
+
+		h4 {
+			font-weight: 500;
+			font-size: 20px;
+			color: $white;
+			margin-bottom: 35px;
+			@media (max-width: 1024px) {
+				font-size: 20px;
+			}
+			@media (max-width: 991px) {
+				margin-bottom: 15px;
+			}
+		}
+		ul {
+			li {
+				margin-bottom: 10px;
+				a {
+					@include transition();
+					color: $pfont;
+					&:hover {
+						color: $baseColor;
+					}
+				}
+			}
+		}
+		.form-wrap {
+			margin-top: 25px;
+
+			.info{
+				color: $baseColor;
+			}
+		}
+		input {
+			height: 45px;
+			border: 1px solid #262533;
+			width: 67% !important;
+			font-weight: 400;
+			background: #262533;
+			color: #8f8f8f;
+			padding-left: 20px;
+			border-radius: 0;
+			font-size: 14px;
+			padding: 10px;
+			&:focus {
+				outline: none;
+				box-shadow: none;
+			}
+			@include placeholder {
+				font-size: 14px;
+				padding-left: 10px;
+				color: #8f8f8f;
+			}
+		}
+		.click-btn {
+			color: $title-color;
+			border-radius: 0;
+			border-top-left-radius: 0px;
+			border-bottom-left-radius: 0px;
+			padding: 5px;
+			border: 0;
+			background: $baseColor;
+			color: $white;
+			position: relative;
+			left: 5px;
+			text-transform: capitalize;
+
+			i,span{
+				font-size: 14px;
+				font-weight: 500;
+			}
+			img{
+				width: 90%;
+			}
+
+			&:focus {
+				outline: none;
+				box-shadow: none;
+			}
+
+			//   @media(max-width: 375px){
+				//     margin-top: 10px;
+				//   }
+
+				// @media(min-width: 400px){
+					// 	left: -50px;
+					// }
+				}
+			}
+			.footer-top{
+				background-image: url(../img/background/footer.jpg);
+				background-size: cover;
+				background-repeat: no-repeat;
+				padding: 115px 0;
+				padding-left: 0px;
+				width: 100%;
+				left: 0;
+				position: absolute;
+				top: -135px;
+				left: -180px;
+				padding-left: 374px;
+			}
+			.footer-bottom {
+				padding: 40px 0;
+				@media (max-width: 991px) {
+					margin-top: 20px;
+				}
+				p {
+
+					a{
+						color: $baseColor;
+					}
+				}
+				// span {
+					// 	font-weight: 700;
+					// }
+					.footer-social {
+						text-align: center;
+						@media (max-width: 991px) {
+							text-align: left;
+							margin-top: 30px;
+						}
+						a {
+							margin-left: 3px;
+							width: 32px;
+							color: $pfont;
+							display: inline-grid;
+							text-align: center;
+							height: 32px;
+							align-content: center;
+							@include transition();
+							&:hover {
+								color: $white;
+							}
+
+							i,span{
+								font-size: 14px;
+							}
+						}
+					}
+				}
+			}
+			//--------- end footer Area -------------//

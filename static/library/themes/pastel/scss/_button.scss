@@ -1,0 +1,191 @@
+/* Main Button Area css
+============================================================================================ */
+.main_btn{
+	display: inline-block;
+	background: $dip;
+	padding: 0px 35px;
+	color: #fff;
+	font-family: $reg;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 48px;
+	border-radius: 3px;
+	outline: none !important;
+	box-shadow: none !important;
+	text-align: center;
+	border: 1px solid $dip;
+	cursor: pointer;
+	font-family: $con;
+	text-transform: uppercase;
+	@include transition;
+	&:hover{
+		background: #fff;
+		color: $baseColor;
+		border: 1px solid #fff;
+	}
+}
+.main_btn_2{
+	display: inline-block;
+	background: #262533;
+	padding: 10px 10px 10px 42px;
+	color: #fff;
+	font-family: "Barlow", sans-serif;
+	font-size: 15px;
+	font-weight: 500;
+	line-height: 48px;
+	outline: none !important;
+	box-shadow: none !important;
+	text-align: center;
+	cursor: pointer;
+	font-family: "Barlow Condensed", sans-serif;
+	text-transform: uppercase;
+	transition: all 300ms linear 0s;
+	letter-spacing: 1px;
+	@include transition;
+	&:hover{
+		color: $baseColor;
+	}
+	span{
+		background-image: url(../img/elements/pattern_bg.png);
+		width: 50px;
+		height: 50px;
+		background-size: cover;
+		display: inline-block;
+		margin-left: 20px;
+		img{
+			width: 15px;
+		}
+	}
+}
+
+.submit_btn{
+	width: auto;
+	display: inline-block;
+	background: $baseColor;
+	padding: 0px 50px;
+	color: #fff;
+	font-family: $reg;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 50px;
+	border-radius: 5px;
+	outline: none !important;
+	box-shadow: none !important;
+	text-align: center;
+	border: 1px solid $baseColor;
+	cursor: pointer;
+	@include transition;
+	&:hover{
+		background: transparent;
+		color: $baseColor;
+	}
+}
+
+.white_bg_btn{
+	display: inline-block;
+	background: #f9f9ff;
+	padding: 0px 35px;
+	color: $dip;
+	font-family: $reg;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 34px;
+	border-radius: 0px;
+	outline: none !important;
+	box-shadow: none !important;
+	text-align: center;
+	border: 1px solid #eeeeee;
+	cursor: pointer;
+	@include transition;
+	&:hover{
+		background: $baseColor;
+		color: #fff;
+		border-color: $baseColor;
+	}
+}
+.black_btn{
+	padding: 0px 44px;
+	line-height: 50px;
+	background: $dip;
+	color: $baseColor;
+	display: inline-block;
+	border-radius: 5px;
+	font-size: 13px;
+	font-family: $reg;
+	font-weight: 500;
+	@include transition;
+	&:hover{
+		background: $baseColor;
+		color: $dip;
+	}
+}
+
+/*=================== custom button rule start ====================*/
+
+.button{
+  font-family: $reg;
+  display: inline-block;
+  border: 1px solid transparent;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 12px 54px;
+  border-radius: 4px;
+  color: $white;
+  border: 1px solid $baseColor;
+  text-transform: uppercase;
+  background: $baseColor;
+  cursor: pointer;
+  @include transition;
+
+  @media(max-width: 767px){
+    font-size: 13px;
+    padding: 9px 24px;
+  }
+
+  &:hover{
+    background: $baseColor;
+    color: $white;
+  }
+
+
+  &-link{
+    letter-spacing: 0;
+    color: #3b1d82;
+    border: 0;
+    padding: 0;
+
+    &:hover{
+      background: transparent;
+      color: #3b1d82;
+    }
+  }
+
+  &-header{
+    background: $baseColor;
+    color: $white;
+    border-color: $baseColor;
+
+    &:hover{
+      background: #b8024c;
+      color: $white;
+    }
+  }
+
+  &-contactForm{
+
+    background: $baseColor;
+    color: $white;
+    border-color: $baseColor;
+    padding: 12px 25px;
+
+    &:hover{
+      border-color: $title-color;
+      background: $title-color;
+      color: $white;
+    }
+  }
+}
+
+
+/* End Main Button Area css
+============================================================================================ */

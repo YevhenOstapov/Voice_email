@@ -1,0 +1,113 @@
+/* Home Banner Area css
+============================================================================================ */
+
+.banner-area {
+
+    .single_slide_banner {
+        background-size: cover;
+        background-repeat: no-repeat;
+        min-height: 800px;
+    }
+    .slide_bg1 {
+        background: url(../img/banner/home-banner.jpg);
+    }
+    .slide_bg2 {
+        background: url(../img/banner/home-banner2.jpg);
+    }
+    .slide_bg3 {
+        background: url(../img/banner/home-banner3.jpg);
+    }
+    .fullscreen {
+        @media (max-width: 991px) {
+            height: 600px !important;
+        }
+    }
+}
+
+.banner-content {
+    text-align: left;
+    @media (max-width: 1680px) {
+        text-align: center;
+    }
+    @media (max-width: 680px) {
+        padding: 48px 20px;
+        margin: 0 15px;
+    }
+    .primary-btn {
+        background: $baseColor;
+        border: 2px solid transparent;
+        color: #fff;
+        &:hover {
+            background: transparent;
+            border-color: $baseColor;
+            color: #000;
+        }
+    }
+    h1 {
+        color: #000;
+        font-size: 72px;
+        font-weight: 500;
+        margin-bottom: 70px;
+        color: $white;
+
+        @media (max-width: 991px) {
+            font-size: 40px;
+        }
+    }
+    .main_btn{
+        font-size: 15px;
+        background: $baseColor;
+        border-color: $baseColor;
+        color: #000;
+        padding: 10px 36px;
+
+    }
+}
+
+.banner-area {
+    .owl-nav {
+        position: absolute;
+        right: 100px;
+        bottom: 0;
+        height: 100px;
+        width: 200px;
+        background: #262533;
+        img{
+            -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+            filter: grayscale(100%);
+        }
+        div:hover{
+            background-image: url(../img/elements/pattern_bg.png);
+            img{
+                -webkit-filter: grayscale(0); /* Safari 6.0 - 9.0 */
+                filter: grayscale(0);
+            }
+        }
+    }
+    .owl-next {
+        right: 10px;
+        position: absolute;
+        top: 10px;
+        height: 80px;
+        width: 80px;
+        text-align: center;
+        line-height: 80px;
+    }
+    .owl-prev {
+        right: 107px;
+        position: absolute;
+        top: 10px;
+        height: 80px;
+        width: 80px;
+        text-align: center;
+        line-height: 80px;
+        transform: rotate(180deg);
+    }
+
+}
+
+/* End Home Banner Area css
+============================================================================================ */
+
+/* End Home Banner Area css
+============================================================================================ */

@@ -1,0 +1,349 @@
+{% extends "userpanel/base.html" %}
+{% block page_content %}
+{% load static %}
+    <section id="report_section" class="content-header" style="display:none;">
+	<div class="report_sec1">
+        <span class="fontsize20">[[ report_name ]]</span>
+        <div class="row" style="margin-top:20px;">
+            <div class="col-md-4">
+                <label style="font-weight:500; font-size:15px;">Agents</label>
+                <select v-model="agent_id" class="form-control">
+                    <option v-for="agent in agent_list" v-bind:value="agent.id">[[ agent.name ]]</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label style="font-weight:500; font-size:15px;">Period</label>
+                <select v-model="period_id" class="form-control">
+                    <option v-for="period in period_list" v-bind:value="period.id">[[ period.name ]]</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label style="font-weight:500; font-size:15px;">Campaign</label>
+                <select v-model="campaign_name" class="form-control">
+                    <option v-for="campaign in campaign_list" v-bind:value="campaign">[[ campaign ]]</option>
+                </select>
+            </div>
+        </div>
+        <div class="row" style="margin-top:10px" v-bind:style="period_id!=5?'display:none;':''">
+            <div class="col-md-2">
+                <label>From</label>
+                <div class="input-group date" data-date-format="yyyy-mm-dd">
+                    <input id="from_date" class="form-control" type="text" readonly />
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <label>To</label>
+                <div class="input-group date" data-date-format="yyyy-mm-dd">
+                    <input id="to_date" class="form-control" type="text" readonly />
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <button v-on:click="onSetFromToPeriod" class="btn btn-default" style="margin-top:25px; width:100%;">Set</button>
+            </div>
+        </div>
+        <div>
+            <div class="row" style="margin-top:15px">
+                <div class="col-md-6">
+                    <div id="campaign_indicator">
+                        <div class="small-box bg-aqua">
+                            <div class="inner" style="text-align:center;">
+                                <p style="font-size:32px;">[[ cnt_total_campaign ]]</p>
+                                <p style="font-size:20px;">[[ cnt_active_campaign ]]</p>
+                                <p style="font-size:20px;">Active Campaigns</p>
+                            </div>
+                        </div>
+                        <div class="Campaigns" style="margin-top:15px; font-size:15px;">
+                            <div class="row line-step">
+                                <div class="col-md-8">Number of Campaigns</div>
+                                <div class="col-md-4">[[ cnt_total_campaign ]]</div>
+                            </div>
+                            <div class="row line-step">
+                                <div class="col-md-8">Number of Active Campaigns</div>
+                                <div class="col-md-4">[[ cnt_active_campaign ]]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id="campaign_indicator">
+                        <div class="small-box bg-green">
+                            <div class="inner " style="text-align:center;">
+                                <p style="font-size:32px;">[[ pro_sms_booked ]]%</p>
+                                <p style="font-size:20px;">[[ cnt_sms_booked ]]</p>
+                                <p style="font-size:20px;">Booked</p>
+                            </div>
+                        </div>
+                        <div class="Campaigns" style="margin-top:15px; font-size:15px;">
+                            <div class="row line-step">
+                                <div class="col-md-4">Total Messages Sent</div>
+                                <div class="col-md-8">[[ cnt_sms_sent ]]</div>
+                            </div>
+                            <div class="row line-step">
+                                <div class="col-md-4">Booked</div>
+                                <div class="col-md-8">[[ cnt_sms_sent ]]</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="separator"></div>
+            <div class="row" style="margin-top:15px">
+                <div class="col-md-12">
+                    <label class="fontsize24">Sent Messages</label>
+                    <div id="sms_sent_bar_chart" style="height:300px"></div>
+                </div>
+            </div>
+			
+            <div class="separator"></div>
+            <div class="row" style="margin-top:15px">
+                <div class="col-md-12">
+                    <label class="fontsize24">Booked</label>
+                    <div id="sms_booked_bar_chart" style="height:300px"></div>
+                </div>
+            </div>
+        </div>
+		</div>
+    </section>
+
+    <script src="https://www.amcharts.com/lib/4/core.js"></script>
+    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+
+    <script type="text/javascript">
+        var report_vue;
+        var agent_list = new Array();
+        var period_list = new Array();
+        var agent_id = 1000000;
+        var period_id = 1000000;
+
+        var chart_sms_sent;
+        var chart_sms_booked;
+
+        // *************** Initialize Data *************** //
+        function initData() {
+            {% for agent in agent_list %}
+                agent_list.push({
+                    "id": {{ agent.id }},
+                    "code": "{{ agent.code }}",
+                    "name": "{{ agent.name }}",
+                    "type": {{ agent.type }}
+                });
+                if (agent_id > {{ agent.id }})
+                    agent_id = {{ agent.id }};
+            {% endfor %}
+
+            {% for period in period_list %}
+                period_list.push({
+                    "id": {{ period.id }},
+                    "name": "{{ period.name }}"
+                });
+            {% endfor %}
+
+            if (3 in period_list)
+                period_id = 3;
+            else
+                period_id = period_list[0]["id"]
+        }
+
+        // *************** Initialize Objects *************** //
+        function initObjects() {
+            $(".date").datepicker({
+                autoclose: true,
+                todayHighlight: true
+            }).datepicker('update', new Date());
+        }
+
+        // *************** On Document Ready *************** //
+        $(document).ready(function () {
+            initData();
+
+            // --------------- report vue instance --------------- //
+            report_vue = new Vue({
+                delimiters: ['[[', ']]'],
+                el: "#report_section",
+                data: {
+                    report_name: "{{ report_name }}",
+                    agent_list: agent_list,
+                    period_list: period_list,
+                    campaign_list: [],
+                    agent_id: agent_id,
+                    period_id: period_id,
+                    campaign_name: "",
+
+                    cnt_total_campaign: 0,
+                    cnt_active_campaign: 0,
+                    pro_active_campaign: 0,
+
+                    cnt_sms_sent: 0,
+                    cnt_sms_booked: 0,
+                    pro_sms_booked: 0,
+                },
+
+                methods: {
+                    // *************** get report data *************** //
+                    getReportData: function() {
+                        if (this.agent_id == 1000000) {
+                            showMessage(alert_list["0x1000D"]["mode"],
+                                        alert_list["0x1000D"]["title"],
+                                        alert_list["0x1000D"]["msg"], 5000);
+                            return;
+                        }
+
+                        showLoading();
+                        $.ajax({
+                            type: "POST",
+                            url: "/user/get_report2_data",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "agent_id": this.agent_id,
+                                "period_id": this.period_id,
+                                "from_date": $("#from_date").val(),
+                                "to_date": $("#to_date").val(),
+                                "campaign_name": this.campaign_name,
+                            },
+                            success: function(res) {
+                                res = JSON.parse(res);
+
+                                report_vue.campaign_list = res["campaign_list"];
+
+                                report_vue.cnt_total_campaign = res["cnt_total_campaign"];
+                                report_vue.cnt_active_campaign = res["cnt_active_campaign"];
+                                if (report_vue.cnt_total_campaign != 0) {
+                                    report_vue.pro_active_campaign = report_vue.cnt_active_campaign / report_vue.cnt_total_campaign * 100;
+                                    report_vue.pro_active_campaign = Math.ceil(report_vue.pro_active_campaign);
+                                } else {
+                                    report_vue.pro_active_campaign = "N/A";
+                                }
+
+                                report_vue.cnt_sms_sent = res["cnt_sms_sent"];
+                                report_vue.cnt_sms_booked = res["cnt_sms_booked"];
+                                if (report_vue.cnt_sms_sent != 0) {
+                                    report_vue.pro_sms_booked = report_vue.cnt_sms_booked / report_vue.cnt_sms_sent * 100;
+                                    report_vue.pro_sms_booked = Math.ceil(report_vue.pro_sms_booked);
+                                } else {
+                                    report_vue.pro_sms_booked = "N/A";
+                                }
+
+                                chart_sms_sent.data = res["data_ss_chart"];
+                                chart_sms_booked.data = res["data_sb_chart"];
+
+                                hideLoading();
+                            },
+                            error: function(res) {
+                                hideLoading();
+                                showMessage(alert_list["0xF0001"]["mode"],
+                                            alert_list["0xF0001"]["title"],
+                                            alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+
+                    // *************** onClick Set From/To Period *************** //
+                    onSetFromToPeriod: function() {
+                        var from_date = new Date($("#from_date").val());
+                        var to_date = new Date($("#to_date").val());
+                        var delta_days = (to_date - from_date)/86400000;
+                        if (delta_days < 0 || delta_days >= 7) {
+                            alert("Max range is 7 days.");
+                            return;
+                        }
+                        report_vue.campaign_name = "";
+                        this.getReportData();
+                    }
+                },
+
+                watch: {
+                    // *************** OnUpdate Agent *************** //
+                    agent_id: function(cur_value, prev_value) {
+                        report_vue.campaign_name = "";
+                        if (this.period_id == 5)
+                            return;
+                        this.getReportData();
+                    },
+
+                    // *************** OnUpdate Period *************** //
+                    period_id: function(cur_value, prev_value) {
+                        if (cur_value != 5 ) {
+                            report_vue.campaign_name = "";
+                            this.getReportData();
+                        }
+                    },
+
+                    // *************** OnUpdate Campaign Name *************** //
+                    campaign_name: function(cur_value, prev_value) {
+                        this.getReportData();
+                    }
+                }
+            });
+
+            // *************** amchart ready *************** //
+            am4core.ready(function () {
+                am4core.useTheme(am4themes_animated);
+
+                // --------------- sms sent bar chart --------------- //
+                chart_sms_sent = am4core.create("sms_sent_bar_chart", am4charts.XYChart);
+                chart_sms_sent.data = [];
+
+                var categoryAxis_sms_sent = chart_sms_sent.xAxes.push(new am4charts.CategoryAxis());
+                categoryAxis_sms_sent.dataFields.category = "x-axis";
+                categoryAxis_sms_sent.renderer.grid.template.location = 0;
+                categoryAxis_sms_sent.renderer.minGridDistance = 30;
+
+                categoryAxis_sms_sent.renderer.labels.template.adapter.add("dy", function (dy, target) {
+                    return dy;
+                });
+
+                var valueAxis_sms_sent = chart_sms_sent.yAxes.push(new am4charts.ValueAxis());
+
+                var series_sms_sent = chart_sms_sent.series.push(new am4charts.ColumnSeries());
+                series_sms_sent.dataFields.valueY = "value";
+                series_sms_sent.dataFields.categoryX = "x-axis";
+                series_sms_sent.name = "Calls";
+                series_sms_sent.columns.template.tooltipText = "{categoryX}: [bold]{valueY}[/]";
+                series_sms_sent.columns.template.fillOpacity = .8;
+                series_sms_sent.columns.template.propertyFields.stroke = "lineColor";
+                series_sms_sent.columns.template.propertyFields.fill = "lineColor";
+
+
+                // --------------- sms booked bar chart --------------- //
+                chart_sms_booked = am4core.create("sms_booked_bar_chart", am4charts.XYChart);
+                chart_sms_booked.data = [];
+
+                var categoryAxis_sms_booked = chart_sms_booked.xAxes.push(new am4charts.CategoryAxis());
+                categoryAxis_sms_booked.dataFields.category = "x-axis";
+                categoryAxis_sms_booked.renderer.grid.template.location = 0;
+                categoryAxis_sms_booked.renderer.minGridDistance = 30;
+
+                categoryAxis_sms_booked.renderer.labels.template.adapter.add("dy", function (dy, target) {
+                    return dy;
+                });
+
+                var valueAxis_sms_booked = chart_sms_booked.yAxes.push(new am4charts.ValueAxis());
+
+                var series_sms_booked = chart_sms_booked.series.push(new am4charts.ColumnSeries());
+                series_sms_booked.dataFields.valueY = "value";
+                series_sms_booked.dataFields.categoryX = "x-axis";
+                series_sms_booked.name = "Calls";
+                series_sms_booked.columns.template.tooltipText = "{categoryX}: [bold]{valueY}[/]";
+                series_sms_booked.columns.template.fillOpacity = .8;
+                series_sms_booked.columns.template.propertyFields.stroke = "lineColor";
+                series_sms_booked.columns.template.propertyFields.fill = "lineColor";
+            });
+
+            report_vue.campaign_name = "";
+
+            showLoading();
+            setTimeout(function() {
+                $("#report_section").css("display", "");
+                hideLoading();
+                report_vue.getReportData();
+            }, FIRST_DELAY);
+
+            initObjects();
+        });
+    </script>
+{% endblock %}

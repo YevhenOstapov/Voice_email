@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>Autoservice AI Dashboard</title>
+    <link rel="shortcut icon" href="https://www.autoservice.ai/wp-content/uploads/2019/03/Untitled-1.png" type="image/x-icon">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="{% static "library/themes/pastel/css/style.css" %}" rel="stylesheet">
+    <link href="{% static "library/themes/pastel/css/responsive.css" %}" rel="stylesheet">
+    <link href="{% static "atsdashboard/css/style.css" %}" rel="stylesheet">
+    <style>
+        .field-icon {
+            float: right;
+            margin-left: -25px;
+            margin-right: 5px;
+            margin-top: -25px;
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="wrapper-page">
+                    <div class="m-t-40 account-pages">
+                        <div class="text-center account-pages">
+                            <div class="text-center account-logo-box">
+                                <div class="m-t-10 m-b-10">
+                                    <a class="text-success">
+                                        <span>
+                                            <img src="{% static "atsdashboard/asset/logo/logo.png" %}" alt="" height="60">
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="account-content">
+                                <form class="form-horizontal" action="/account/{{ user_uid }}" method="post">
+                                    {% csrf_token %}
+                                    <div class="form-group row">
+                                        <div class="col-12" style="text-align: left;">
+                                            <div style="text-align:center;">
+                                                <span style="font-weight:bold; color:#ff4d17;">{{ alert_str }}</span>
+                                            </div>
+                                            <label for="email">Email</label>
+                                            <input id="email" name="email" class="form-control" type="text" required="" style="border:1px solid #999">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-12" style="text-align: left;">
+                                            <label for="password">Password</label>
+                                            <input id="password" class="form-control" name="password" type="password" required="" style="border:1px solid #999">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-12" style="text-align: left;">
+                                            <label for="password">Password Retype</label>
+                                            <input id="r_password" class="form-control" name="r_password" type="password" required="" style="border:1px solid #999">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="col-12">
+                                            <button class="btn w-md btn-bordered btn-custom btn-success waves-effect waves-light Setbtn " type="submit" style="min-width:110px; float:left;">Set</button>
+                                        </div>
+                                    </div>
+                                </form>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
+
+<script>
+    var account_form_vue;     // account form vue instance
+
+    // *************** On Toggle Password Eye *************** //
+    function onTogglePasswordEye() {
+        if ($("#password_eye").hasClass("fa-eye")) {
+            $("#password_eye").removeClass("fa-eye");
+            $("#password_eye").addClass("fa-eye-slash");
+            $("#password").attr("type", "text");
+        } else {
+            $("#password_eye").removeClass("fa-eye-slash");
+            $("#password_eye").addClass("fa-eye");
+            $("#password").attr("type", "password");
+        }
+    }
+
+    // *************** Document Ready *************** //
+    $(document).ready(function() {
+        // --------------- Account Form Vue Instance --------------- //
+        account_form_vue = new Vue({
+            delimiters: ['[[', ']]'],
+            el: ".account-content",
+            data: {
+                alert_str: ""
+            },
+            methods: {
+            }
+        });
+    });
+</script>
+</html>

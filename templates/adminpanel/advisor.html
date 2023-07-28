@@ -1,0 +1,1010 @@
+{% extends "adminpanel/base.html" %}
+{% block page_content %}
+{% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.min.css" />
+    <section id="main_section" class="page-content area-padding-bottom" style="min-height:600px; display:none;">
+		<div class="phonenuber_sec">
+	 <span style="line-height:2.3; color:var(--caravan-dark-gray);">Tel: +1 xx xxx xx xx  |  <a href="mailto:support@autoservice.ai" style="color:var(--caravan-dark-gray)">support@autoservice.ai</a></span>
+	</div>
+        <div class="container-fluid" style="max-width:1240px;">
+            <div class="topbackground" id="advisor_tbl" style="margin-top:20px;">
+                <div style="width:98%; margin-left:1%;">
+                    <div class="row">
+                        <div class="col-8 col-md-3">
+                            <input v-model="filter_str" type="text" class="form-control" style="border-color:#bbb" placeholder="Filter ...">
+                        </div>
+                        <div class="col-4 col-md-9">
+                            <button v-on:click="onRegister" class="btn btn-success Register" style="float:right; margin-right:1%; font-size:14px; margin-bottom:10px;"
+                                data-target="#advisorRegisterModal" data-toggle="modal">Register <i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="tblWrap">
+                        <table class="table-bordered my-table">
+                            <thead>
+                                <th style="width:9%;">Name</th>
+                                <th style="width:9%;">Phone Number</th>
+                                <th style="width:10%;">Email</th>
+                                <th style="width:10%;">Company</th>
+                                <th style="width:7%;">booking URL</th>
+                                <th style="width:12%;">config EscalationOn Off</th>
+                                <th style="width:5%;"></th>
+                            </thead>
+                            <tbody>
+                                <tr v-if="total_page == 0">
+                                    <td colspan="12">
+                                        No data
+                                    </td>
+                                </tr>
+                                <tr v-else v-for="advisor in advisor_list">
+                                    <td>[[ advisor.name ]]</td>
+                                    <td>[[ advisor.phone_number ]]</td>
+                                    <td>[[ advisor.email ]]</td>
+                                    <td>[[ advisor.company_name ]]</td>
+                                    <td>[[ advisor.bookingURL ]] </td>
+                                    <td>[[ advisor.configEscalationOnOff ]] </td>
+                                    <td>
+                                        <i @click="onUpdate(advisor.name)" class="fa fa-edit" data-target="#advisorRegisterModal" data-toggle="modal"></i>
+                                        <i @click="onDelete(advisor.name)" class="fa fa-trash"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" style="float:right !important;">
+                        <i v-on:click="onClickPrevious();" class="fa fa-arrow-left" style="padding-top:3px; padding-right:5px;"></i>
+                        <span v-if="total_page != 0">[[ cur_page ]] / [[ total_page ]]</span>
+                        <span v-if="total_page == 0">0 / 0</span>
+                        <i v-on:click="onClickNext();" class="fa fa-arrow-right" style="padding-top:3px; padding-left:5px;"></i>
+                    </div>
+                </div>
+
+                <div id="advisorRegisterModal" class="modal modal-adminpro-general default-popup-PrimaryModal fade" role="dialog" style="color:#54595f;">
+                    <div class="modal-dialog" style="width:100%; max-width:1350px; font-size:16px;">
+                        <div class="modal-content">
+                            <div class="modal-header header-color-modal star-back-color" style="height:50px; color:white;">
+                                <h2 v-if="r_u_flag==1" class="modal-title Registertitle">Register Advisor</h2>
+                                <h2 v-if="r_u_flag==2" class="modal-title Registertitle">Update Advisor</h2>
+                                <div class="modal-close-area modal-close-df">
+                                    <a class="close star-back-color" data-dismiss="modal" href="#" style="color:#54595f; margin-top:-20px;"><i class="fa fa-close"></i></a>
+                                </div>
+                            </div>
+                            <div style="margin-top:15px;">
+                                <section class="content" style="width:96%; margin-left:2%;">
+                                    <div class="row">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">Name (*)</label>
+                                            <input v-model="reg_name" class="form-control" :readonly="r_u_flag==2">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">Phone Number (*)</label>
+                                            <input v-model="reg_phone_number" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">Email (*)</label>
+                                            <input v-model="reg_email" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">Company (*)</label>
+                                            <select v-model="reg_company_id" class="form-control">
+                                                <option v-for="company in company_list" v-bind:value="company.id">[[ company.name ]]</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">promptGreeting (*)</label>
+                                            <input v-model="promptGreeting" id="promptGreeting" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14 margin_b">bookingURL (*)</label>
+                                            <input v-model="bookingURL" id="bookingURL" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label style="float:left margin_b;">Meeting</label>
+                                           
+                                        </div>
+                                       
+                                    </div>
+                                    
+                                    <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">filterMeetingOnOff (*)</label>
+                                            <select v-model="filterMeetingOnOff" id="filterMeetingOnOff" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option   value="on">ON</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptMeetingOptions (*)</label>
+                                            <input v-model="promptMeetingOptions" id="promptMeetingOptions" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptMeetingConclusion (*)</label>
+                                            <input v-model="promptMeetingConclusion" id="promptMeetingConclusion" class="form-control">
+                                        </div>
+                                         <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">callerMeetingTemplate (*)</label>
+                                            <input v-model="callerMeetingTemplate" id="callerMeetingTemplate" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">advisorMeetingTemplate (*)</label>
+                                            <input v-model="advisorMeetingTemplate" id="advisorMeetingTemplate" class="form-control">
+                                        </div>
+
+                                    </div>
+
+                                    <!-- <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label style="float:left margin_b;">Buddy</label>
+                                            <i v-on:click="onAddBuddy" class="fa fa-plus" style="float:left; margin-top:3px; margin-left:5px;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph">
+                                        <div class="col-6 col-sm-6 col-md-4 col-lg-4 col-xl-4 ">
+                                            <label class="font-size14 margin_b">Buddy Name (*)</label>
+                                            <input v-model="reg_buddy_name" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">Buddy Phone Number (*)</label>
+                                            <input v-model="reg_buddy_phone_number" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">Buddy Email (*)</label>
+                                            <input v-model="reg_buddy_email" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph">
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style="overflow-x:auto;">
+                                            <table class="table-bordered report-table Registertable" style="width:100%; min-width:1000px; font-size:15px;">
+                                                <thead>
+                                                    <th style="width:30%;">Buddy Name</th>
+                                                    <th style="width:30%;">Buddy Phone Number</th>
+                                                    <th style="width:30%;">Buddy Email</th>
+                                                    <th style="width:10%;"></th>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-if="reg_buddy_list.length==0">
+                                                        <td colspan="4">
+                                                            No buddies
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-else v-for="buddy in reg_buddy_list">
+                                                        <td>[[ buddy.name ]]</td>
+                                                        <td>[[ buddy.phone_number ]]</td>
+                                                        <td>[[ buddy.email ]]</td>
+                                                        <td>
+                                                            <i @click="onDeleteBuddy(buddy.name)" class="fa fa-trash"></i>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div> -->
+                                     <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label style="float:left margin_b;"> Voicemail</label>
+                                           
+                                        </div>
+                                       
+                                     </div>
+                                     <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">filterVMOnOff (*)</label>
+                                            <select v-model="filterVMOnOff" id="filterVMOnOff" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option   value="on">ON</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMOptions (*)</label>
+                                            <input v-model="promptVMOptions" id="promptVMOptions" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMStart (*)</label>
+                                            <input v-model="promptVMStart" id="promptVMStart" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptFirstName (*)</label>
+                                            <input v-model="promptFirstName" id="promptFirstName" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">confAskPermissionToText (*)</label>
+                                            <select v-model="confAskPermissionToText" id="confAskPermissionToText" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option  value="on">ON</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMPermission (*)</label>
+                                            <input v-model="promptVMPermission" id="promptVMPermission" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMConclusion (*)</label>
+                                            <input v-model="promptVMConclusion" id="promptVMConclusion" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">includeRecording (*)</label>
+                                            <select v-model="includeRecording" id="includeRecording" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option  value="on">ON</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">configTimeoutVM (*)</label>
+                                            <input v-model="configTimeoutVM" id="configTimeoutVM" class="form-control">
+                                        </div>
+                                         <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">configTimeoutNoVMLeft (*)</label>
+                                            <input v-model="configTimeoutNoVMLeft" id="configTimeoutNoVMLeft" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">configEscalationOnOff (*)</label>
+                                            <select v-model="configEscalationOnOff" id="configEscalationOnOff" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option   value="on">ON</option>
+                                            </select>
+                                        </div>
+                                    </div>             
+
+                                    <div class="row paragraph-1">
+                                        <div class="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14 margin_b">Caller Response Template (*)</label>
+                                            <textarea v-model="reg_caller_response_template" class="form-control" rows="10"></textarea>
+                                        </div>
+                                        <div class="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14 margin_b">Advisor Response Template (*)</label>
+                                            <textarea v-model="reg_advisor_response_template" class="form-control" rows="10"></textarea>
+                                        </div>
+                                        <div class="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14 margin_b">Caller Text Response Template (*)</label>
+                                            <textarea v-model="reg_caller_text_response_template" class="form-control" rows="10"></textarea>
+                                        </div>
+                                        <div class="col-12 col-sm-12 col-md-6 col-lg-3 col-xl-3">
+                                            <label class="font-size14 margin_b">Manager Response Template (*)</label>
+                                            <textarea v-model="reg_manager_response_template" class="form-control" rows="10"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-xl-3">
+                                            <label style="float:left margin_b;">Buddy</label>
+                                            <i v-on:click="onAddBuddy" class="fa fa-plus" style="float:left; margin-top:3px; margin-left:5px;"></i>
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph">
+                                        <div class="col-6 col-sm-6 col-md-4 col-lg-4 col-xl-4 ">
+                                            <label class="font-size14 margin_b">Buddy Name (*)</label>
+                                            <input v-model="reg_buddy_name" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">Buddy Phone Number (*)</label>
+                                            <input v-model="reg_buddy_phone_number" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-4 col-lg-4 col-xl-4">
+                                            <label class="font-size14 margin_b">Buddy Email (*)</label>
+                                            <input v-model="reg_buddy_email" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="row paragraph">
+                                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12" style="overflow-x:auto;">
+                                            <table class="table-bordered report-table Registertable" style="width:100%; min-width:1000px; font-size:15px;">
+                                                <thead>
+                                                    <th style="width:30%;">Buddy Name</th>
+                                                    <th style="width:30%;">Buddy Phone Number</th>
+                                                    <th style="width:30%;">Buddy Email</th>
+                                                    <th style="width:10%;"></th>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-if="reg_buddy_list.length==0">
+                                                        <td colspan="4">
+                                                            No buddies
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-else v-for="buddy in reg_buddy_list">
+                                                        <td>[[ buddy.name ]]</td>
+                                                        <td>[[ buddy.phone_number ]]</td>
+                                                        <td>[[ buddy.email ]]</td>
+                                                        <td>
+                                                            <i @click="onDeleteBuddy(buddy.name)" class="fa fa-trash"></i>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- <div class="row paragraph-1">
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">filterVMOnOff (*)</label>
+                                            <select v-model="filterVMOnOff" id="filterVMOnOff" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option   value="on">ON</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMOptions (*)</label>
+                                            <input v-model="promptVMOptions" id="promptVMOptions" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMStart (*)</label>
+                                            <input v-model="promptVMStart" id="promptVMStart" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptFirstName (*)</label>
+                                            <input v-model="promptFirstName" id="promptFirstName" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">confAskPermissionToText (*)</label>
+                                            <select v-model="confAskPermissionToText" id="confAskPermissionToText" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option  value="on">ON</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMPermission (*)</label>
+                                            <input v-model="promptVMPermission" id="promptVMPermission" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMConclusion (*)</label>
+                                            <input v-model="promptVMConclusion" id="promptVMConclusion" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">includeRecording (*)</label>
+                                            <select v-model="includeRecording" id="includeRecording" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option  value="on">ON</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">configTimeoutVM (*)</label>
+                                            <input v-model="configTimeoutVM" id="configTimeoutVM" class="form-control">
+                                        </div>
+                                         <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">configTimeoutNoVMLeft (*)</label>
+                                            <input v-model="configTimeoutNoVMLeft" id="configTimeoutNoVMLeft" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">configEscalationOnOff (*)</label>
+                                            <select v-model="configEscalationOnOff" id="configEscalationOnOff" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option   value="on">ON</option>
+                                            </select>
+                                        </div>
+                                    </div> -->
+                                         <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">filterMeetingOnOff (*)</label>
+                                            <select v-model="filterMeetingOnOff" id="filterMeetingOnOff" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option   value="on">ON</option>
+                                            </select>
+                                        </div> -->
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptMeetingOptions (*)</label>
+                                            <input v-model="promptMeetingOptions" id="promptMeetingOptions" class="form-control">
+                                        </div> -->
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">filterVMOnOff (*)</label>
+                                            <select v-model="filterVMOnOff" id="filterVMOnOff" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option   value="on">ON</option>
+                                            </select>
+                                        </div> -->
+                                         <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">confAskPermissionToText (*)</label>
+                                            <select v-model="confAskPermissionToText" id="confAskPermissionToText" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option  value="on">ON</option>
+                                            </select>
+                                        </div> -->
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">configTimeoutVM (*)</label>
+                                            <input v-model="configTimeoutVM" id="configTimeoutVM" class="form-control">
+                                        </div>
+                                         <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">configTimeoutNoVMLeft (*)</label>
+                                            <input v-model="configTimeoutNoVMLeft" id="configTimeoutNoVMLeft" class="form-control">
+                                        </div> -->
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptGreeting (*)</label>
+                                            <input v-model="promptGreeting" id="promptGreeting" class="form-control">
+                                        </div> -->
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptMeetingConclusion (*)</label>
+                                            <input v-model="promptMeetingConclusion" id="promptMeetingConclusion" class="form-control">
+                                        </div> -->
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMOptions (*)</label>
+                                            <input v-model="promptVMOptions" id="promptVMOptions" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMStart (*)</label>
+                                            <input v-model="promptVMStart" id="promptVMStart" class="form-control">
+                                        </div> -->
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMPermission (*)</label>
+                                            <input v-model="promptVMPermission" id="promptVMPermission" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptVMConclusion (*)</label>
+                                            <input v-model="promptVMConclusion" id="promptVMConclusion" class="form-control">
+                                        </div> -->
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">promptFirstName (*)</label>
+                                            <input v-model="promptFirstName" id="promptFirstName" class="form-control">
+                                        </div> -->
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">callerMeetingTemplate (*)</label>
+                                            <input v-model="callerMeetingTemplate" id="callerMeetingTemplate" class="form-control">
+                                        </div>
+                                        <div class="col-6 col-sm-6 col-md-6 col-lg-3 col-md-3">
+                                            <label class="font-size14 margin_b">advisorMeetingTemplate (*)</label>
+                                            <input v-model="advisorMeetingTemplate" id="advisorMeetingTemplate" class="form-control">
+                                        </div> -->
+
+
+                                        <!-- <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-3">
+                                            <label class="font-size14 margin_b">includeRecording (*)</label>
+                                            <select v-model="includeRecording" id="includeRecording" class="form-control">
+                                                <option  value="off">OFF</option>
+                                                <option  value="on">ON</option>
+                                            </select>
+                                        </div> -->
+                                    
+                                </section>
+                            </div>
+                            <div class="modal-footer margin_t">
+                                <button v-on:click="onRegisterAdvisor()" id="confirm_register" class="btn btn-success">Confirm</button>
+                                <button id="btn_close" class="btn btn-success" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+    <script type="text/javascript">
+        var advisortbl_vue;        // advisortbl vue instance
+        var advisor_list = [];
+        var company_list = [];
+
+        // *************** Init Data *************** //
+        function initData() {
+            var i = 0, j = 0;
+
+            {% for company in company_list %}
+                company_list.push({
+                    "id": {{ company.id }},
+                    "name": "{{ company.name }}"
+                });
+            {% endfor %}
+
+            {% for advisor in advisor_list %}
+                advisor_list[i] = {
+                    "id": {{ advisor.id }},
+                    "name": "{{ advisor.name }}",
+                    "phone_number": "{{ advisor.phone_number }}",
+                    "email": "{{ advisor.email }}",
+                    "company_id": {{ advisor.company_id }},
+                    "company_name": "",
+                    "caller_response_template": "{{ advisor.caller_response_template }}".replace(/slashn/g, "\n").replace(/&#39;/g, "'").replace(/slashopposite/g, "\\"),
+                    "advisor_response_template": "{{ advisor.advisor_response_template }}".replace(/slashn/g, "\n").replace(/&#39;/g, "'").replace(/slashopposite/g, "\\"),
+                    "caller_text_response_template": "{{ advisor.caller_text_response_template }}".replace(/slashn/g, "\n").replace(/&#39;/g, "'").replace(/slashopposite/g, "\\"),
+                    "manager_response_template": "{{ advisor.manager_response_template }}".replace(/slashn/g, "\n").replace(/&#39;/g, "'").replace(/slashopposite/g, "\\"),
+                    "bookingURL": "{{ advisor.bookingURL }}",
+                    "configEscalationOnOff": " {{ advisor.configEscalationOnOff }}",
+                    "filterMeetingOnOff": " {{ advisor.filterMeetingOnOff }}",
+                    "promptMeetingOptions": "{{ advisor.promptMeetingOptions }}",
+                    "filterVMOnOff": "{{ advisor.filterVMOnOff}}",
+                    "confAskPermissionToText": "{{ advisor.confAskPermissionToText }}",
+                    "configTimeoutVM": "{{ advisor.configTimeoutVM}}",
+                    "configTimeoutNoVMLeft": "{{ advisor.configTimeoutNoVMLeft }}",
+                    "promptGreeting": "{{ advisor.promptGreeting }}",
+                    "promptMeetingConclusion": "{{ advisor.promptMeetingConclusion }}",
+                    "promptVMOptions": "{{ advisor.promptVMOptions }}",
+                    "promptVMStart": "{{ advisor.promptVMStart }}",
+                    "promptVMPermission": "{{ advisor.promptVMPermission }}",
+                    "promptVMConclusion": "{{ advisor.promptVMConclusion }}",
+                    "promptFirstName": "{{ advisor.promptFirstName }}",
+                    "callerMeetingTemplate": "{{ advisor.callerMeetingTemplate }}",
+                    "advisorMeetingTemplate": "{{ advisor.advisorMeetingTemplate }}",
+                    "includeRecording": "{{ advisor.includeRecording }}",
+
+                    "buddy_list": []
+                };
+
+                {% for buddy in advisor.buddy_list %}
+                    advisor_list[i]["buddy_list"].push({
+                        "name": "{{ buddy.name }}",
+                        "phone_number": "{{ buddy.phone_number }}",
+                        "email": "{{ buddy.email }}"
+                    });
+                {% endfor %}
+
+                for (j = 0; j < company_list.length; j++)
+                    if (company_list[j]["id"] == advisor_list[i]["company_id"]) {
+                        advisor_list[i]["company_name"] = company_list[j]["name"];
+                        break;
+                    }
+                i++;
+            {% endfor %}
+        }
+
+        // *************** Document Ready *************** //
+        $(document).ready(function() {
+            initData();
+
+            showLoading();
+            setTimeout(function() {
+                $("#main_section").css("display", "");
+                hideLoading();
+            }, FIRST_DELAY);
+
+            // *************** advisor Table Vue Instance *************** //
+            advisortbl_vue = new Vue({
+                delimiters: ['[[', ']]'],
+                el : "#advisor_tbl",
+                data: {
+                    r_u_flag: 1,
+                    cur_page: 1,
+                    total_advisor: {{ total_advisor }},
+                    total_page: {{ total_page }},
+                    advisor_list: advisor_list,
+                    filter_str: "",
+                    company_list: company_list,
+
+                    reg_name: "",
+                    reg_phone_number: "",
+                    reg_email: "",
+                    reg_company_id: 0,
+                    reg_caller_response_template: "",
+                    reg_advisor_response_template: "",
+                    reg_caller_text_response_template: "",
+                    reg_manager_response_template: "",
+                    bookingURL: "",
+                    configEscalationOnOff: "",
+                    filterMeetingOnOff: "",
+                    promptMeetingOptions: "",
+                    filterVMOnOff: "",
+                    confAskPermissionToText: "",
+                    configTimeoutVM: "",
+                    configTimeoutNoVMLeft: "",
+                    promptGreeting: "",
+                    promptMeetingConclusion: "",
+                    promptVMOptions: "",
+                    promptVMStart: "",
+                    promptVMPermission: "",
+                    promptVMConclusion: "",
+                    promptFirstName: "",
+                    callerMeetingTemplate: "",
+                    advisorMeetingTemplate: "",
+                    includeRecording: "",
+
+                    reg_buddy_list: [],
+                    reg_buddy_name: "",
+                    reg_buddy_phone_number: "",
+                    reg_buddy_email: "",
+                },
+                methods: {
+                    // *************** OnClick Register Advisor *************** //
+                    onRegister: function() {
+                        this.r_u_flag = 1;
+                        this.reg_name = this.reg_phone_number = this.reg_email = "";
+                        this.reg_company_id = 0;
+                        this.reg_buddy_list = [];
+                        this.reg_buddy_name = this.reg_buddy_phone_number = this.reg_buddy_email = "";
+                        this.reg_caller_response_template = this.reg_advisor_response_template = "";
+                        this.reg_caller_text_response_template = this.reg_manager_response_template = "";
+                        this.bookingURL = this.bookingURL = "";
+                        this.configEscalationOnOff = this.configEscalationOnOff = "";
+                        this.filterMeetingOnOff = this.filterMeetingOnOff = "";
+                        this.promptMeetingOptions = this.promptMeetingOptions = "";
+                        this.filterVMOnOff  = this.filterVMOnOff  = "";
+                        this.confAskPermissionToText = this.confAskPermissionToText  = "";
+                        this.configTimeoutVM  = this.configTimeoutVM = "";
+                        this.configTimeoutNoVMLeft = this.configTimeoutNoVMLeft  = "";
+                        this.promptGreeting = this.promptGreeting  = "";
+                        this.promptMeetingConclusion = this.promptMeetingConclusion  = "";
+                        this.promptVMOptions  = this.promptVMOptions  = "";
+                        this.promptVMStart  = this.promptVMStart  = "";
+                        this.promptVMPermission  = this.promptVMPermission  = "";
+                        this.promptVMConclusion = this.promptVMConclusion  = "";
+                        this.promptFirstName  = this.promptFirstName  = "";
+                        this.callerMeetingTemplate  = this.callerMeetingTemplate  = "";
+                        this.advisorMeetingTemplate  = this.advisorMeetingTemplate  = "";
+                        this.includeRecording  = this.includeRecording  = "";
+
+                    },
+
+                    // *************** OnClick Update Advisor *************** //
+                    onUpdate: function(name) {
+                        var i;
+                        var idx;
+                        this.r_u_flag = 2;
+
+                        for (i = 0; i < this.advisor_list.length; i++) {
+                            var advisor = this.advisor_list[i];
+                            if (advisor["name"] == name) {
+                                this.reg_name = advisor["name"];
+                                this.reg_phone_number = advisor["phone_number"];
+                                this.reg_email = advisor["email"];
+                                this.reg_company_id = advisor["company_id"];
+                                this.reg_buddy_list = advisor["buddy_list"];
+                                this.reg_buddy_name = this.reg_buddy_phone_number = this.reg_buddy_email = "";
+                                this.reg_caller_response_template = advisor["caller_response_template"];
+                                this.reg_advisor_response_template = advisor["advisor_response_template"];
+                                this.reg_caller_text_response_template = advisor["caller_text_response_template"];
+                                this.reg_manager_response_template = advisor["manager_response_template"];
+                                this.bookingURL = advisor["bookingURL"];
+                                this.configEscalationOnOff = advisor["configEscalationOnOff"];
+                                this.filterMeetingOnOff = advisor["filterMeetingOnOff"];
+                                this.promptMeetingOptions = advisor["promptMeetingOptions"];
+                                this.filterVMOnOff  = advisor["filterVMOnOff"];
+                                this.confAskPermissionToText = advisor["confAskPermissionToText"];
+                                this.configTimeoutVM  = advisor["configTimeoutVM"];
+                                this.configTimeoutNoVMLeft = advisor["configTimeoutNoVMLeft"];
+                                this.promptGreeting = advisor["promptGreeting"];
+                                this.promptMeetingConclusion = advisor["promptMeetingConclusion"];
+                                this.promptVMOptions = advisor["promptVMOptions"];
+                                this.promptVMStart = advisor["promptVMStart"];
+                                this.promptVMPermission = advisor["promptVMPermission"];
+                                this.promptVMConclusion = advisor["promptVMConclusion"];
+                                this.promptFirstName = advisor["promptFirstName"];
+                                this.callerMeetingTemplate = advisor["callerMeetingTemplate"];
+                                this.advisorMeetingTemplate = advisor["advisorMeetingTemplate"];
+                                this.includeRecording = advisor["includeRecording"];
+
+                                break;
+                            }
+                        }
+                    },
+
+                    // *************** OnClick Delete Agent *************** //
+                    onDelete: function(name) {
+                        if (!confirm("Do you want to delete this advisor?")) return;
+                        $.ajax({
+                            type: "POST",
+                            url: "/admin/delete_advisor",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "name": name
+                            },
+                            async: false,
+                            success: function(res) {
+                                for (var i = 0; i < advisortbl_vue.advisor_list.length; i++) {
+                                    if (advisortbl_vue.advisor_list[i]["name"] == name) {
+                                        advisortbl_vue.advisor_list.splice(i, 1);
+                                        advisortbl_vue.total_advisor--;
+                                        advisortbl_vue.total_page = Math.ceil(advisortbl_vue.total_advisor / 15);
+                                    }
+                                }
+                                showMessage(alert_list["0x10015"]["mode"],
+                                            alert_list["0x10015"]["title"],
+                                            alert_list["0x10015"]["msg"], 5000);
+                            },
+                            error: function(res) {
+                                showMessage(alert_list["0xF0001"]["mode"],
+                                            alert_list["0xF0001"]["title"],
+                                            alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+                    // *************** OnConfirm Register Advisor *************** //
+                    onRegisterAdvisor: function() {
+                        this.reg_sms_allowed_from = $("#sms_allowed_from").val();
+                        this.reg_sms_allowed_to = $("#sms_allowed_to").val();
+                        this.reg_email_allowed_from = $("#email_allowed_from").val();
+                        this.reg_email_allowed_to = $("#email_allowed_to").val();
+
+                        var param = {};
+                        if (this.reg_name == "" || this.reg_phone_number == "" || this.reg_email == "" || this.reg_company_id == 0 ||
+                            this.reg_caller_response_template == "" || this.reg_advisor_response_template == "" || this.reg_caller_text_response_template == "" || this.reg_manager_response_template == "" || this.bookingURL == "" ||
+                            this.configEscalationOnOff == "" || this.filterMeetingOnOff == "" || this.promptMeetingOptions == "" || this.filterVMOnOff == "" || this.confAskPermissionToText == "" ||
+                            this.configTimeoutVM == "" || this.configTimeoutNoVMLeft == "" || this.promptGreeting == "" || this.promptMeetingConclusion == ""  || this.promptVMOptions == ""  || this.promptVMStart == ""
+                            || this.promptVMPermission == ""  || this.promptVMConclusion == ""  || this.promptFirstName == ""  || this.callerMeetingTemplate == ""  || this.advisorMeetingTemplate== ""  || this.includeRecording == "") {
+                            showMessage(alert_list["0x10001"]["mode"],
+                                        alert_list["0x10001"]["title"],
+                                        alert_list["0x10001"]["msg"], 5000);
+                            return;
+                        }
+                        if (this.reg_phone_number[0] != "+") {
+                            showMessage(alert_list["0x10018"]["mode"],
+                                        alert_list["0x10018"]["title"],
+                                        alert_list["0x10018"]["msg"], 5000);
+                            return;
+                        }
+                        param = {
+                            name: this.reg_name,
+                            phone_number: this.reg_phone_number,
+                            email: this.reg_email,
+                            company_id: this.reg_company_id,
+                            buddy_list: this.reg_buddy_list,
+                            caller_response_template: this.reg_caller_response_template,
+                            advisor_response_template: this.reg_advisor_response_template,
+                            caller_text_response_template: this.reg_caller_text_response_template,
+                            manager_response_template: this.reg_manager_response_template,
+                            bookingURL: this.bookingURL,
+                            configEscalationOnOff: this.configEscalationOnOff,
+                            filterMeetingOnOff: this.filterMeetingOnOff,
+                            promptMeetingOptions: this.promptMeetingOptions,
+                            filterVMOnOff: this.filterVMOnOff,
+                            confAskPermissionToText: this.confAskPermissionToText,
+                            configTimeoutVM: this.configTimeoutVM,
+                            configTimeoutNoVMLeft: this.configTimeoutNoVMLeft,
+                            promptGreeting: this.promptGreeting,
+                            promptMeetingConclusion: this.promptMeetingConclusion,
+                            promptVMOptions: this.promptVMOptions,
+                            promptVMStart: this.promptVMStart,
+                            promptVMPermission: this.promptVMPermission,
+                            promptVMConclusion: this.promptVMConclusion,
+                            promptFirstName: this.promptFirstName,
+                            callerMeetingTemplate: this.callerMeetingTemplate,
+                            advisorMeetingTemplate: this.advisorMeetingTemplate,
+                            includeRecording: this.includeRecording,
+
+                        };
+
+                        // ---------- register case ---------- //
+                        if (this.r_u_flag == 1) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/admin/register_advisor",
+                                beforeSend: function( xhr ) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                                },
+                                data: {
+                                    "param": JSON.stringify(param)
+                                },
+                                async: false,
+                                success: function(res) {
+                                    var tmp_ary = new Array();
+                                    var i;
+                                    var company_name = "";
+
+                                    for (i = 0; i < advisortbl_vue.advisor_list.length; i++)
+                                        tmp_ary.push(advisortbl_vue.advisor_list[i]);
+
+                                    for (i = 0; i < company_list.length; i++)
+                                        if (company_list[i]["id"] == this.reg_company_id) {
+                                            company_name = company_list[i]["name"];
+                                            break;
+                                        }
+
+                                    advisortbl_vue.advisor_list = new Array();
+                                    advisortbl_vue.advisor_list.push({
+                                        "id": res,
+                                        "name": advisortbl_vue.reg_name,
+                                        "phone_number": advisortbl_vue.reg_phone_number,
+                                        "email": advisortbl_vue.reg_email,
+                                        "company_id": advisortbl_vue.reg_company_id,
+                                        "company_name": company_name,
+                                        "buddy_list": advisortbl_vue.reg_buddy_list,
+                                        "caller_response_template": advisortbl_vue.reg_caller_response_template,
+                                        "advisor_response_template": advisortbl_vue.reg_advisor_response_template,
+                                        "caller_text_response_template": advisortbl_vue.reg_caller_text_response_template,
+                                        "manager_response_template": advisortbl_vue.reg_manager_response_template,
+                                        "bookingURL": advisortbl_vue.bookingURL,
+                                        "configEscalationOnOff": advisortbl_vue.configEscalationOnOff,
+                                        "filterMeetingOnOff": advisortbl_vue.filterMeetingOnOff,
+                                        "promptMeetingOptions": advisortbl_vue.promptMeetingOptions,
+                                        "filterVMOnOff": advisortbl_vue.filterVMOnOff,
+                                        "confAskPermissionToText": advisortbl_vue.confAskPermissionToText,
+                                        "configTimeoutVM": advisortbl_vue.configTimeoutVM,
+                                        "configTimeoutNoVMLeft": advisortbl_vue.configTimeoutNoVMLeft,
+                                        "promptGreeting": advisortbl_vue.promptGreeting,
+                                        "promptMeetingConclusion": advisortbl_vue.promptMeetingConclusion,
+                                        "promptVMOptions": advisortbl_vue.promptVMOptions,
+                                        "promptVMStart": advisortbl_vue.promptVMStart,
+                                        "promptVMPermission": advisortbl_vue.promptVMPermission,
+                                        "promptVMConclusion": advisortbl_vue.promptVMConclusion,
+                                        "promptFirstName": advisortbl_vue.promptFirstName,
+                                        "callerMeetingTemplate": advisortbl_vue.callerMeetingTemplate,
+                                        "advisorMeetingTemplate": advisortbl_vue.advisorMeetingTemplate,
+                                        "includeRecording": advisortbl_vue.includeRecording,
+
+                                    });
+
+                                    for (i = 0; i < Math.min(tmp_ary.length, 14); i++)
+                                        advisortbl_vue.advisor_list[i+1] = tmp_ary[i];
+
+                                    advisortbl_vue.total_advisor++;
+                                    advisortbl_vue.total_page = Math.ceil(advisortbl_vue.total_advisor / 15);
+
+                                    showMessage(alert_list["0x10012"]["mode"],
+                                                alert_list["0x10012"]["title"],
+                                                alert_list["0x10012"]["msg"], 5000);
+
+                                    $("#btn_close").trigger("click");
+                                },
+                                error: function(res) {
+                                    if (res["responseText"] == "existing_name") {
+                                        showMessage(alert_list["0x10013"]["mode"],
+                                                    alert_list["0x10013"]["title"],
+                                                    alert_list["0x10013"]["msg"], 5000);
+                                    } else if (res["responseText"] == "error") {
+                                        showMessage(alert_list["0xF0001"]["mode"],
+                                                    alert_list["0xF0001"]["title"],
+                                                    alert_list["0xF0001"]["msg"], 5000);
+                                    }
+                                }
+                            });
+                        }
+                        // ---------- update case ---------- //
+                        else if (this.r_u_flag == 2) {
+                            $.ajax({
+                                type: "POST",
+                                url: "/admin/update_advisor",
+                                beforeSend: function( xhr ) {
+                                    xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                                },
+                                data: {
+                                    "param": JSON.stringify(param)
+                                },
+                                async: false,
+                                success: function(res) {
+                                    var i;
+                                    var company_name = "";
+
+                                    for (i = 0; i < company_list.length; i++)
+                                        if (company_list[i]["id"] == advisortbl_vue.reg_company_id) {
+                                            company_name = company_list[i]["name"];
+                                            break;
+                                        }
+
+
+                                    for (i = 0; i < advisortbl_vue.advisor_list.length; i++) {
+                                        var advisor = advisortbl_vue.advisor_list[i];
+                                        if (advisor["name"] == advisortbl_vue.reg_name) {
+                                            advisortbl_vue.advisor_list[i]["phone_number"] = advisortbl_vue.reg_phone_number;
+                                            advisortbl_vue.advisor_list[i]["email"] = advisortbl_vue.reg_email;
+                                            advisortbl_vue.advisor_list[i]["company_id"] = advisortbl_vue.reg_company_id;
+                                            advisortbl_vue.advisor_list[i]["company_name"] = company_name;
+                                            advisortbl_vue.advisor_list[i]["buddy_list"] = advisortbl_vue.reg_buddy_list;
+                                            advisortbl_vue.advisor_list[i]["caller_response_template"] = advisortbl_vue.reg_caller_response_template;
+                                            advisortbl_vue.advisor_list[i]["advisor_response_template"] = advisortbl_vue.reg_advisor_response_template;
+                                            advisortbl_vue.advisor_list[i]["caller_text_response_template"] = advisortbl_vue.reg_caller_text_response_template;
+                                            advisortbl_vue.advisor_list[i]["manager_response_template"] = advisortbl_vue.reg_manager_response_template;
+                                            advisortbl_vue.advisor_list[i]["bookingURL"] = advisortbl_vue.bookingURL;
+                                            advisortbl_vue.advisor_list[i]["configEscalationOnOff"] = advisortbl_vue.configEscalationOnOff;
+                                            advisortbl_vue.advisor_list[i]["filterMeetingOnOff"] = advisortbl_vue.filterMeetingOnOff;
+                                            advisortbl_vue.advisor_list[i]["promptMeetingOptions"] = advisortbl_vue.promptMeetingOptions;
+                                            advisortbl_vue.advisor_list[i]["filterVMOnOff"] = advisortbl_vue.filterVMOnOff;
+                                            advisortbl_vue.advisor_list[i]["confAskPermissionToText"] = advisortbl_vue.confAskPermissionToText;
+                                            advisortbl_vue.advisor_list[i]["configTimeoutVM"] = advisortbl_vue.configTimeoutVM;
+                                            advisortbl_vue.advisor_list[i]["configTimeoutNoVMLeft"] = advisortbl_vue.configTimeoutNoVMLeft;
+                                            advisortbl_vue.advisor_list[i]["promptGreeting"] = advisortbl_vue.promptGreeting;
+                                            advisortbl_vue.advisor_list[i]["promptMeetingConclusion"] = advisortbl_vue.promptMeetingConclusion;
+                                            advisortbl_vue.advisor_list[i]["promptVMOptions"] = advisortbl_vue.promptVMOptions;
+                                            advisortbl_vue.advisor_list[i]["promptVMStart"] = advisortbl_vue.promptVMStart;
+                                            advisortbl_vue.advisor_list[i]["promptVMPermission"] = advisortbl_vue.promptVMPermission;
+                                            advisortbl_vue.advisor_list[i]["promptVMConclusion"] = advisortbl_vue.promptVMConclusion;
+                                            advisortbl_vue.advisor_list[i]["promptFirstName"] = advisortbl_vue.promptFirstName;
+                                            advisortbl_vue.advisor_list[i]["callerMeetingTemplate"] = advisortbl_vue.callerMeetingTemplate;
+                                            advisortbl_vue.advisor_list[i]["advisorMeetingTemplate"] = advisortbl_vue.advisorMeetingTemplate;
+                                            advisortbl_vue.advisor_list[i]["includeRecording"] = advisortbl_vue.includeRecording;
+
+
+
+
+                                        }
+                                    }
+                                    showMessage(alert_list["0x10014"]["mode"],
+                                                alert_list["0x10014"]["title"],
+                                                alert_list["0x10014"]["msg"], 5000);
+
+                                    $("#btn_close").trigger("click");
+                                },
+                                error: function(res) {
+                                    showMessage(alert_list["0xF0001"]["mode"],
+                                                alert_list["0xF0001"]["title"],
+                                                alert_list["0xF0001"]["msg"], 5000);
+                                }
+                            });
+                        }
+                    },
+
+                    // *************** OnClick Add Buddy *************** //
+                    onAddBuddy: function() {
+                        var i;
+                        if (this.reg_buddy_name == "" || this.reg_buddy_phone_number == "" || this.reg_buddy_email == "") {
+                            showMessage(alert_list["0x10001"]["mode"],
+                                        alert_list["0x10001"]["title"],
+                                        alert_list["0x10001"]["msg"], 5000);
+                            return;
+                        }
+                        if (this.reg_buddy_phone_number[0] != "+") {
+                            showMessage(alert_list["0x10018"]["mode"],
+                                        alert_list["0x10018"]["title"],
+                                        alert_list["0x10018"]["msg"], 5000);
+                            return;
+                        }
+                        if (this.reg_buddy_list.length >= 3) {
+                            showMessage(alert_list["0x10016"]["mode"],
+                                        alert_list["0x10016"]["title"],
+                                        alert_list["0x10016"]["msg"], 5000);
+                            return;
+                        }
+                        for (i = 0; i < this.reg_buddy_list.length; i++)
+                            if (this.reg_buddy_list[i]["name"] == this.reg_buddy_name) {
+                                showMessage(alert_list["0x10017"]["mode"],
+                                            alert_list["0x10017"]["title"],
+                                            alert_list["0x10017"]["msg"], 5000);
+                                return;
+                            }
+
+                        this.reg_buddy_list.push({
+                            "name": this.reg_buddy_name,
+                            "phone_number": this.reg_buddy_phone_number,
+                            "email": this.reg_buddy_email
+                        });
+                    },
+
+                    // *************** OnClick Delete Buddy *************** //
+                    onDeleteBuddy: function(name) {
+                        var i;
+                        for (i = 0; i < this.reg_buddy_list.length; i++)
+                            if(this.reg_buddy_list[i]["name"] == name) {
+                                this.reg_buddy_list.splice(i, 1);
+                            }
+                    },
+
+                    // *************** Get Page Advisors *************** //
+                    getPageAdvisors: function() {
+                        $.ajax({
+                            type: "POST",
+                            url: "/admin/get_page_advisor",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "filter_str": this.filter_str,
+                                "cur_page": this.cur_page
+                            },
+                            async: false,
+                            success: function(res) {
+                                res = JSON.parse(res);
+                                advisortbl_vue.total_page = res["total_page"];
+                                res = res["advisor_list"];
+                                advisortbl_vue.advisor_list = new Array();
+                                for (var i = 0; i < res.length; i++) {
+                                    advisortbl_vue.advisor_list.push(res[i]);
+                                }
+                            }
+                        });
+                    },
+
+                    // *************** OnClick Previous Page *************** //
+                    onClickPrevious: function() {
+                        if (this.cur_page <= 1)
+                            return;
+                        this.cur_page--;
+                        this.getPageAdvisors();
+                    },
+
+                    // *************** OnClick Next Page *************** //
+                    onClickNext: function() {
+                        if (this.cur_page >= this.total_page)
+                            return;
+                        this.cur_page++;
+                        this.getPageAdvisors();
+                    }
+                },
+                watch: {
+                    // *************** OnUpdate Filter String *************** //
+                    filter_str: function() {
+                        this.cur_page = 1;
+                        this.getPageAdvisors();
+                    }
+                }
+            });
+
+            $('.datetimepicker').datetimepicker({
+                format: 'LT'
+            });
+        });
+
+    </script>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "userpanel/base.html" %}
+{% block page_content %}
+{% load static %}
+    <section id="report_section" class="content-header" style="display:none;">
+	<div class="report_sec1">
+        <span class="fontsize20">[[ report_name ]]</span>
+        <div class="row" style="margin-top:20px;">
+            <div class="col-md-3">
+                <label style="font-weight:500; font-size:16px;">Period</label>
+                <select v-model="period_id" class="form-control">
+                    <option value="6">This Week</option>
+                    <option value="3">Last Week</option>
+                    <option value="5">From/To</option>
+                </select>
+            </div>
+        </div>
+        <div class="row" style="margin-top:10px" v-bind:style="period_id!=5?'display:none;':''">
+            <div class="col-md-4">
+                <label>From</label>
+                <div class="input-group date" data-date-format="yyyy-mm-dd">
+                    <input id="from_date" class="form-control" type="text" readonly />
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label>To</label>
+                <div class="input-group date" data-date-format="yyyy-mm-dd">
+                    <input id="to_date" class="form-control" type="text" readonly />
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                </div>
+            </div>
+            <div class="col-md-1">
+                <button v-on:click="onSetFromToPeriod" class="btn btn-default" style="margin-top:25px; width:100%;">Set</button>
+            </div>
+        </div>
+        <div class="row" style="margin-top:15px">
+            <div class="col-md-10">
+                <label style="font-size:16px;">Voice Mail</label>
+                <div id="voice_mail_chart" style="height:350px"></div>
+            </div>
+        </div>
+        <div class="separator"></div>
+        <div class="row" style="margin-top:15px">
+            <div class="col-md-10">
+                <label style="font-size:16px;">Average Response Time</label>
+                <div id="average_rt_chart" style="height:350px"></div>
+            </div>
+        </div>
+		 </div>
+    </section>
+
+    <script src="https://www.amcharts.com/lib/4/core.js"></script>
+    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+
+    <script type="text/javascript">
+        var report_vue;
+        var agent_list = new Array();
+        var period_list = new Array();
+        var agent_id = 1000000;
+        var period_id = 1000000;
+
+        var chart_vm;       // voice mail chart
+        var chart_art;      // average response time chart
+
+        // *************** Initialize Data *************** //
+        function initData() {
+            {% for agent in agent_list %}
+                agent_list.push({
+                    "id": {{ agent.id }},
+                    "code": "{{ agent.code }}",
+                    "name": "{{ agent.name }}",
+                    "type": {{ agent.type }}
+                });
+                if (agent_id > {{ agent.id }})
+                    agent_id = {{ agent.id }};
+            {% endfor %}
+
+            {% for period in period_list %}
+                period_list.push({
+                    "id": {{ period.id }},
+                    "name": "{{ period.name }}"
+                });
+            {% endfor %}
+
+            //if (3 in period_list)
+            //    period_id = 3;
+            //else
+            //    period_id = period_list[0]["id"]
+        }
+
+        // *************** Initialize Objects *************** //
+        function initObjects() {
+            $(".date").datepicker({
+                autoclose: true,
+                todayHighlight: true
+            }).datepicker('update', new Date());
+        }
+
+        // *************** Create Axis & Series For LineChart *************** //
+        function createAxisAndSeries(chart, field, name, opposite, bullet, prefix_tooltip, idx) {
+            var valueAxis;
+            if (idx == 1) {
+                valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+            } else {
+                valueAxis = chart.yAxes.getIndex(0);
+                valueAxis.syncWithAxis = chart_vm.yAxes.getIndex(0);
+            }
+
+            var series = chart.series.push(new am4charts.LineSeries());
+            series.dataFields.valueY = field;
+            series.dataFields.categoryX = "date";
+            series.strokeWidth = 2;
+            series.yAxis = valueAxis;
+            series.name = name;
+            series.tooltipText = "{name}: [bold]{valueY}" + prefix_tooltip + "[/]";
+            series.tensionX = 0.8;
+            series.showOnInit = true;
+
+            var interfaceColors = new am4core.InterfaceColorSet();
+            var bullet = series.bullets.push(new am4charts.CircleBullet());
+            bullet.circle.stroke = interfaceColors.getFor("background");
+            bullet.circle.strokeWidth = 2;
+
+            valueAxis.renderer.line.strokeOpacity = 1;
+            valueAxis.renderer.line.strokeWidth = 2;
+            valueAxis.renderer.line.stroke = series.stroke;
+            valueAxis.renderer.labels.template.fill = series.stroke;
+            valueAxis.renderer.opposite = opposite;
+        }
+
+        // *************** On Document Ready *************** //
+        $(document).ready(function () {
+            initData();
+
+            // --------------- report vue instance --------------- //
+            report_vue = new Vue({
+                delimiters: ['[[', ']]'],
+                el: "#report_section",
+                data: {
+                    report_name: "{{ report_name }}",
+                    agent_list: agent_list,
+                    period_list: period_list,
+                    campaign_list: [],
+                    agent_id: agent_id,
+                    period_id: 6,
+                },
+
+                methods: {
+                    // *************** get report data *************** //
+                    getReportData: function() {
+                        if (this.agent_id == 1000000) {
+                            showMessage(alert_list["0x1000D"]["mode"],
+                                        alert_list["0x1000D"]["title"],
+                                        alert_list["0x1000D"]["msg"], 5000);
+                            return;
+                        }
+                        showLoading();
+                        $.ajax({
+                            type: "POST",
+                            url: "/user/get_report3_data",
+                            beforeSend: function( xhr ) {
+                                xhr.setRequestHeader("X-CSRFToken", getCsrfToken());
+                            },
+                            data: {
+                                "agent_id": this.agent_id,
+                                "period_id": this.period_id,
+                                "from_date": $("#from_date").val(),
+                                "to_date": $("#to_date").val()
+                            },
+                            success: function(res) {
+                                res = JSON.parse(res);
+                                chart_vm.data = res["data_vm_chart"];
+                                chart_art.data = res["data_art_chart"];
+
+                                hideLoading();
+                            },
+                            error: function(res) {
+                                hideLoading();
+                                showMessage(alert_list["0xF0001"]["mode"],
+                                            alert_list["0xF0001"]["title"],
+                                            alert_list["0xF0001"]["msg"], 5000);
+                            }
+                        });
+                    },
+
+                    // *************** onClick Set From/To Period *************** //
+                    onSetFromToPeriod: function() {
+                        var from_date = new Date($("#from_date").val());
+                        var to_date = new Date($("#to_date").val());
+                        var delta_days = (to_date - from_date)/86400000;
+                        if (delta_days < 0 || delta_days >= 7) {
+                            alert("Max range is 7 days.");
+                            return;
+                        }
+                        this.getReportData();
+                    }
+                },
+
+                watch: {
+                    // *************** OnUpdate Agent *************** //
+                    agent_id: function(cur_value, prev_value) {
+                        if (this.period_id == 5)
+                            return;
+                        this.getReportData();
+                    },
+
+                    // *************** OnUpdate Period *************** //
+                    period_id: function(cur_value, prev_value) {
+                        if (cur_value != 5 ) {
+                            this.getReportData();
+                        }
+                    },
+                }
+            });
+
+            var i;
+            // --------------- voice mail chart --------------- //
+            chart_vm = am4core.create("voice_mail_chart", am4charts.XYChart);
+            chart_vm.colors.step = 2;
+            chart_vm.data = [];
+
+            var categoryAxis_vm = chart_vm.xAxes.push(new am4charts.CategoryAxis());
+            categoryAxis_vm.dataFields.category = "date";
+            categoryAxis_vm.renderer.grid.template.location = 0;
+            categoryAxis_vm.renderer.minGridDistance = 30;
+
+            createAxisAndSeries(chart_vm, "Total", "Total", false, "circle", "", 1);
+            createAxisAndSeries(chart_vm, "Last Period", "Last Period", false, "circle", "", 2);
+            for (i = 0; i < agent_list.length; i++) {
+                createAxisAndSeries(chart_vm, agent_list[i]["name"], agent_list[i]["name"], false, "circle", "", i+3);
+            }
+            chart_vm.legend = new am4charts.Legend();
+            chart_vm.cursor = new am4charts.XYCursor();
+
+            // --------------- average response time chart --------------- //
+            chart_art = am4core.create("average_rt_chart", am4charts.XYChart);
+            chart_art.colors.step = 2;
+            chart_art.data = [];
+
+            var categoryAxis_art = chart_art.xAxes.push(new am4charts.CategoryAxis());
+            categoryAxis_art.dataFields.category = "date";
+            categoryAxis_art.renderer.grid.template.location = 0;
+            categoryAxis_art.renderer.minGridDistance = 30;
+
+            for (i = 0; i < agent_list.length; i++) {
+                createAxisAndSeries(chart_art, agent_list[i]["name"], agent_list[i]["name"], false, "circle", "s", i+1);
+            }
+            chart_art.legend = new am4charts.Legend();
+            chart_art.cursor = new am4charts.XYCursor();
+
+
+            showLoading();
+            setTimeout(function() {
+                $("#report_section").css("display", "");
+                hideLoading();
+                report_vue.getReportData();
+            }, FIRST_DELAY);
+
+            initObjects();
+        });
+    </script>
+{% endblock %}

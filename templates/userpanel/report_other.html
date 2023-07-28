@@ -1,0 +1,12 @@
+{% extends "userpanel/base.html" %}
+{% block page_content %}
+{% load static %}
+    <section id="report_section" class="content-header" style="height:800px;">
+	<div class="report_sec1">
+        <span style="font-size:36px;">{{ report_name }}</span>
+        <div style="margin-top:15px; width:100%; height:100%;">
+            <iframe src="{{ report_url }}" style="width:100%; height:100%;"></iframe>
+        </div>
+		</div>
+    </section>
+{% endblock %}

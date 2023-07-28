@@ -1,0 +1,356 @@
+/* Home Banner Area css
+============================================================================================ */
+.home_banner_area{
+	position: relative;
+	z-index: 1;
+	min-height: 930px;
+	.banner_inner{
+		position: relative;
+		overflow: hidden;
+		width: 100%;
+		min-height: 930px;
+		.overlay{
+			background: url(../img/banner/home-banner.jpg) no-repeat scroll center center;
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			height: 100%;
+			bottom: 0;
+			z-index: -1;
+		}
+		.banner_content{
+			color: #fff;
+			text-align: left;
+			margin-top: 350px;
+
+			p{
+				color: $dip;
+				font-family: $reg;
+				text-transform: uppercase;
+				position: relative;
+				margin-bottom: 35px;
+				line-height: 32px;
+				@media (max-width: 767px){
+					margin-bottom: 20px;
+				}
+			}
+
+			h1{
+				font-size: 48px;
+				font-family: $con;
+				font-weight: 700;
+				text-align: left;
+				color: $dip;
+				margin-bottom: 20px;
+				.basecolor {
+					color: $baseColor;
+				}
+				@media (max-width: 767px){
+					font-size: 35px;
+				}
+			}
+			@media (max-width: 1500px){
+				margin-top: 0;
+			}
+			@media (max-width: 1200px){
+				padding-left: 50px;
+			}
+		}
+	}	
+	.social_area {
+		position: absolute;
+		top: 300px;
+		left: 90px;
+		h4{
+			display: block;
+
+			
+		}
+		a{
+			font-size: 14px;
+			color: $dip;
+			font-family: $reg;
+			-moz-transform: rotate(-90deg);
+			-webkit-transform: rotate(-90deg);
+			transform: rotate(-90deg);
+			display: block;
+			height: 108px;
+			poation: relative;
+			i{
+				font-size: 14px;
+				margin-right: 10px;
+			}
+		}
+		.round{
+			width: 7px;
+			height: 7px;
+			background: #f81c1c;
+			border-radius: 50px;
+			transform: translateX(-5px);
+		}
+		@media (max-width: 1400px ){
+			left: 60px;
+		}
+
+		@media (max-width: 1200px ){
+			left: 25px;
+			top: 187px;
+		}
+		@media (max-width: 768px ){
+			display: none;
+		}
+
+	}
+	
+}
+
+
+
+
+.blog_banner{
+	min-height: 660px;
+	position: relative;
+	z-index: 1;
+	overflow: hidden;
+	margin-bottom: 0px;
+	.banner_inner{
+		background: #04091e;
+		position: relative; 
+		overflow: hidden;
+		width: 100%;
+		min-height: 660px;
+		z-index: 1;
+		.overlay{
+			background: url(../img/banner/banner-2.jpg) no-repeat scroll center center;
+			opacity: .5;
+			height: 125%;
+			position: absolute;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			z-index: -1;
+		}
+		.blog_b_text{
+			max-width: 700px;
+			margin: auto;
+			color: #fff;
+			h2{
+				font-size: 60px;
+				font-weight: bold;
+				font-family: $con;
+				line-height: 66px;
+				margin-bottom: 15px;
+			}
+			p{
+				font-size: 16px;
+				margin-bottom: 35px;
+			}
+			.white_bg_btn{
+				line-height: 42px;
+				padding: 0px 45px;
+			}
+		}
+	}
+}
+
+.banner_box{
+	max-width: 1620px;
+	margin: auto;
+}
+
+.banner_area{
+	position: relative;
+	z-index: 1;
+	min-height: 425px;
+	.banner_inner{
+		position: relative;
+		overflow: hidden;
+		width: 100%;
+		min-height: 425px;
+		background: url(../img/banner/banner-2.jpg) no-repeat scroll center center;
+		z-index: 1;
+		background-size:cover;
+		.banner_content{
+			h2{
+				color: #fff;
+				font-size: 48px;
+				font-family: $con;
+				margin-bottom: 20px;
+				font-weight: bold;
+			}
+			p{
+				color: #fff;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			.page_link{
+				padding: 25px;
+				background: $baseColor;
+				display: inline-block;
+				a{
+					font-size: 14px;
+					color: #000;
+					font-family: $con;
+					margin-right: 32px;
+					position: relative;
+					font-weight: 500;
+					text-transform: uppercase;
+					&:before{
+						content: "\e628";
+						font-family: 'themify';
+						font-style: normal;
+						font-weight: normal;
+						font-variant: normal;
+						text-transform: none;
+						line-height: 1;
+						right: -25px;
+						top: 1px;
+						position: absolute;
+					}
+					&:last-child{
+						margin-right: 0px;
+						&:before{
+							display: none;
+						}	
+					}
+					&:hover{
+						color: #fff;
+					}
+				}
+			}
+		}
+	}
+}
+
+/* End Home Banner Area css
+============================================================================================ */
+
+
+
+/* banner section start
+============================================================================================ */
+.hero-banner{
+	position: relative;
+	padding: 205px 0 150px!important;
+	background: url(../img/banner/banner-2.jpg) no-repeat scroll center center;
+	background-size: cover;
+	// z-index: 2;
+
+	@media(min-width: 768px){
+		padding: 150px 0;
+	}
+
+	@media(min-width: 1200px){
+		padding: 110px 0;
+	}
+
+	&-sm{
+		padding-top: 80px;
+		padding-bottom: 80px;
+
+		@media(min-width: 992px){
+			padding-top: 100px;
+			padding-bottom: 100px;
+		}
+	}
+
+	h1{
+		color: $title-color;
+		margin-bottom: 25px;
+		font-size: 28px;
+
+		@media(min-width: 768px){
+			font-size: 60px;
+			margin-bottom: 45px;
+		}
+	}
+
+	h2{
+		font-size: 22px;
+		color: $title-color;
+		text-transform: capitalize;
+		margin-bottom: 0;
+
+		@media(min-width: 768px){
+			font-size: 42px;
+		}
+	}
+
+	p{
+		font-size: 22px;
+		color: $title-color;
+		margin-bottom: 0;
+	}
+}
+
+.hero-banner-icon{
+	color: $title-color;
+	display: inline-block;
+	// margin-bottom: 10px;
+
+	@media(min-width: 768px){
+		margin-bottom: 10px;
+	}
+
+	i,span{
+		font-size: 35px;
+
+		@media(min-width: 768px){
+			font-size: 60px;
+		}
+	}
+
+	[class^="flaticon-"]:before, [class*=" flaticon-"]:before, [class^="flaticon-"]:after, [class*=" flaticon-"]:after{
+		font-size: 35px;
+
+		@media(min-width: 768px){
+			font-size: 60px;
+		}
+	}
+}
+/* banner section end
+============================================================================================ */
+
+
+
+/* breadcrumb section start
+============================================================================================ */
+.banner-breadcrumb{
+	display: inline-block;
+
+	.breadcrumb{
+		background: transparent;
+		padding: 0;
+
+		&-item{
+			padding: .1rem;
+
+			a{
+				text-transform: capitalize;
+				color: $title-color;
+			}
+
+			&+.breadcrumb-item::before{
+				color: $title-color;
+				padding-left: .2rem;
+				padding-right: .4rem;
+				// content: "-";
+			}
+
+			&.active{
+				color: $title-color;
+			}
+		}
+	}
+	.breadcrumb-item{
+		a{
+			&:hover{
+				color: $baseColor;
+			}
+		}
+	}
+
+}
+/* breadcrumb section end
+  ============================================================================================ */
